@@ -1,132 +1,110 @@
 "use client";
-import * as React from "react";
-import { cn } from "@/lib/utils";
+
+import { useActionState, useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { redirect } from "next/navigation";
+import { signUp } from "@/app/actions/auth";
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { postRegister } from "@/lib/api/auth";
-import { useAuth, User } from "./auth-provider";
-
-export function SignupForm({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [confirmPassword, setConfirmPassword] = React.useState("");
-  const [error, setError] = React.useState(false);
-  const { setUser } = useAuth();
-
-  React.useEffect(() => {
-    if (password && confirmPassword && password !== confirmPassword) {
-      setError(true);
-      console.log("Passwords do not match");
-    } else {
-      setError(false);
-    }
-  }, [password, confirmPassword]);
-
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
-    if (error) {
-      return;
-    } else {
-      const result: any = await postRegister({
-        email,
-        password,
-        confirmPassword,
-      });
-      if (result.status !== 201) {
-        console.error("Failed to signup:", result);
-        return;
-      } else {
-        setUser(result.data as User);
-        console.log("SIGNEDUP: ", result.data);
-        redirect("/dashboard");
-      }
-    }
-  };
+export default function SignUpForm() {
+  const [state, action, isPending] = useActionState(signUp, null);
+  const [hasReferral, setHasReferral] = useState(false);
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="text-xl">Welcome back</CardTitle>
+    <div className="flex items-center justify-center bg-gray-50 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center">
+            Sign Up
+          </CardTitle>
+          <CardDescription className="text-center">
+            Create your account to get started
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit}>
-            <div className="grid gap-6">
-              <div className="grid gap-6">
-                <div className="grid gap-3">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    onChange={(e) => setEmail(e.target.value)}
-                    id="email"
-                    type="email"
-                    placeholder="m@example.com"
-                    required
-                  />
-                </div>
-                <div className="grid gap-3">
-                  <div className="flex items-center">
-                    <Label htmlFor="password">Password</Label>
-                    <a
-                      href="#"
-                      className="ml-auto text-sm underline-offset-4 hover:underline"
-                    >
-                      Forgot your password?
-                    </a>
-                  </div>
-                  <Input
-                    onChange={(e) => setPassword(e.target.value)}
-                    id="password"
-                    type="password"
-                    required
-                  />
-                </div>
-                <div className="grid gap-3">
-                  <div className="flex items-center">
-                    <Label htmlFor="confirm-password">Confirm Password</Label>
-                  </div>
-                  <Input
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    id="confirm-password"
-                    type="password"
-                    required
-                  />
-                </div>
-                {error && (
-                  <div className="text-red-500 text-sm">
-                    Passwords do not match.
-                  </div>
-                )}
-                <Button type="submit" className="w-full">
-                  Signup
-                </Button>
-              </div>
-              <div className="text-center text-sm">
-                Already have an account?{" "}
-                <a href="/login" className="underline underline-offset-4">
-                  Sign in
-                </a>
-              </div>
+        <form action={action}>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="m@example.com"
+                required
+              />
             </div>
-          </form>
-        </CardContent>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input id="password" name="password" type="password" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                required
+              />
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="hasReferral"
+                name="hasReferral"
+                checked={hasReferral}
+                onCheckedChange={(checked) =>
+                  setHasReferral(checked as boolean)
+                }
+              />
+              <Label htmlFor="hasReferral" className="text-sm">
+                I have a referral code
+              </Label>
+            </div>
+
+            {hasReferral && (
+              <div className="space-y-2 mb-4">
+                <Label htmlFor="signUpCode">Sign Up Code</Label>
+                <Input
+                  id="signUpCode"
+                  name="signUpCode"
+                  type="text"
+                  placeholder="Enter your referral code"
+                  required={hasReferral}
+                />
+              </div>
+            )}
+
+            {state && (
+              <div
+                className={`text-sm text-center ${state.success ? "text-green-600" : "text-red-600"}`}
+              >
+                {state.message}
+              </div>
+            )}
+          </CardContent>
+          <CardFooter className="flex flex-col space-y-4">
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? "Creating Account..." : "Sign Up"}
+            </Button>
+            <p className="text-sm text-center text-muted-foreground">
+              Already have an account?{" "}
+              <Link href="/signin" className="text-primary hover:underline">
+                Sign in
+              </Link>
+            </p>
+          </CardFooter>
+        </form>
       </Card>
-      <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="#">Privacy Policy</a>.
-      </div>
     </div>
   );
 }

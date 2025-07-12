@@ -1,4 +1,10 @@
-import DashboardComponent from "@/components/dashboard";
+import { ProtectedRoute } from "@/components/auth/protected-route";
+import DashboardContent from "@/components/dashboard/dashboard-content";
+
 export default function DashboardPage() {
-  return <DashboardComponent />;
+  return (
+    <ProtectedRoute requiredRoles={["user", "moderator", "admin"]}>
+      <DashboardContent />
+    </ProtectedRoute>
+  );
 }
