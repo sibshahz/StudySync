@@ -1,80 +1,88 @@
-import type { AuthResponse, User } from "@/types/auth"
+import type { AuthResponse, User } from "@/types/auth";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 // Token management
 export const tokenStorage = {
   getToken: (): string | null => {
-    if (typeof window === "undefined") return null
-    return localStorage.getItem("token")
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("token");
   },
 
   setToken: (token: string): void => {
-    if (typeof window === "undefined") return
-    localStorage.setItem("token", token)
+    if (typeof window === "undefined") return;
+    localStorage.setItem("token", token);
   },
 
   getRefreshToken: (): string | null => {
-    if (typeof window === "undefined") return null
-    return localStorage.getItem("refreshToken")
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("refreshToken");
   },
 
   setRefreshToken: (token: string): void => {
-    if (typeof window === "undefined") return
-    localStorage.setItem("refreshToken", token)
+    if (typeof window === "undefined") return;
+    localStorage.setItem("refreshToken", token);
   },
 
   removeTokens: (): void => {
-    if (typeof window === "undefined") return
-    localStorage.removeItem("token")
-    localStorage.removeItem("refreshToken")
+    if (typeof window === "undefined") return;
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
   },
-}
+};
 
 // JWT utilities
 export const jwtUtils = {
   isTokenExpired: (token: string): boolean => {
     try {
-      const payload = JSON.parse(atob(token.split(".")[1]))
-      return payload.exp * 1000 < Date.now()
+      const payloadPart = token.split(".")[1];
+      if (!payloadPart) throw new Error("Invalid token format");
+      const payload = JSON.parse(atob(payloadPart));
+      return payload.exp * 1000 < Date.now();
     } catch {
-      return true
+      return true;
     }
   },
 
   getTokenPayload: (token: string): any => {
     try {
-      return JSON.parse(atob(token.split(".")[1]))
+      const payloadPart = token.split(".")[1];
+      if (!payloadPart) throw new Error("Invalid token format");
+      return JSON.parse(atob(payloadPart));
     } catch {
-      return null
+      return null;
     }
   },
-}
+};
 
 // API utilities
 export const authAPI = {
-  login: async (credentials: { email: string; password: string }): Promise<AuthResponse> => {
+  login: async (credentials: {
+    email: string;
+    password: string;
+  }): Promise<AuthResponse> => {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(credentials),
-    })
+    });
 
     if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.message || "Login failed")
+      const error = await response.json();
+      throw new Error(error.message || "Login failed");
     }
 
-    return response.json()
+    return response.json();
   },
 
   signup: async (credentials: {
-    email: string
-    password: string
-    name: string
-    referralCode?: string
+    email: string;
+    password: string;
+    name: string;
+    referralCode?: string;
   }): Promise<AuthResponse> => {
     const response = await fetch(`${API_BASE_URL}/auth/signup`, {
       method: "POST",
@@ -82,30 +90,32 @@ export const authAPI = {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(credentials),
-    })
+    });
 
     if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.message || "Signup failed")
+      const error = await response.json();
+      throw new Error(error.message || "Signup failed");
     }
 
-    return response.json()
+    return response.json();
   },
 
-  refreshToken: async (refreshToken: string): Promise<{ token: string; refreshToken: string }> => {
+  refreshToken: async (
+    refreshToken: string
+  ): Promise<{ token: string; refreshToken: string }> => {
     const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ refreshToken }),
-    })
+    });
 
     if (!response.ok) {
-      throw new Error("Token refresh failed")
+      throw new Error("Token refresh failed");
     }
 
-    return response.json()
+    return response.json();
   },
 
   getProfile: async (token: string): Promise<User> => {
@@ -113,13 +123,13 @@ export const authAPI = {
       headers: {
         Authorization: `Bearer ${token}`,
       },
-    })
+    });
 
     if (!response.ok) {
-      throw new Error("Failed to get profile")
+      throw new Error("Failed to get profile");
     }
 
-    return response.json()
+    return response.json();
   },
 
   logout: async (token: string): Promise<void> => {
@@ -128,6 +138,6 @@ export const authAPI = {
       headers: {
         Authorization: `Bearer ${token}`,
       },
-    })
+    });
   },
-}
+};

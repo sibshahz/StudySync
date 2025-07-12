@@ -61,10 +61,14 @@ export default function LandingPage() {
           </Link>
         </nav>
         <div className="ml-6 flex gap-2">
-          <Button variant="ghost" size="sm">
-            Sign In
-          </Button>
-          <Button size="sm">Get Started</Button>
+          <Link href={"/signin"}>
+            <Button variant="outline" size="sm">
+              Sign In
+            </Button>
+          </Link>
+          <Link href={"/signup"}>
+            <Button size="sm">Sign Up</Button>
+          </Link>
         </div>
       </header>
 
@@ -527,7 +531,7 @@ export default function LandingPage() {
           <span className="font-bold">StudySync</span>
         </div>
         <p className="text-xs text-muted-foreground sm:ml-4">
-          © 2024 StudySync. All rights reserved.
+          © 2025-2026 StudySync. All rights reserved.
         </p>
         <nav className="sm:ml-auto flex gap-4 sm:gap-6">
           <Link href="#" className="text-xs hover:underline underline-offset-4">
