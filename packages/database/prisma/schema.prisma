@@ -1,0 +1,326 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+//
+// ENUMS
+//
+
+enum Role {
+  ADMIN
+  TEACHER
+  STAFF
+  STUDENT
+  USER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING
+  DELETED
+  GRADUATED
+}
+
+enum SemesterSeason {
+  SPRING
+  FALL
+}
+
+enum QuestionType {
+  MCQ
+  SHORT
+  LONG
+}
+
+//
+// CORE MODELS
+//
+
+model OrganizationMembership {
+  id             Int          @id @default(autoincrement())
+  userId         Int
+  organizationId Int
+  role           Role         // Role in this specific organization
+  createdAt      DateTime     @default(now())
+
+  user           User         @relation(fields: [userId], references: [id])
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([userId, organizationId]) // prevent duplicate memberships
+}
+
+
+model Organization {
+  id           Int                     @id @default(autoincrement())
+  name         String                  @unique
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
+
+  departments  Departments[]
+  joinCodes    JoinCode[]
+  memberships  OrganizationMembership[]
+}
+
+model JoinCode {
+  id             Int       @id @default(autoincrement())
+  code           String    @unique                // Numeric or alphanumeric code
+  organizationId Int                                // Belongs to an org
+  role           Role                               // Role this code is for (STUDENT, TEACHER, etc.)
+  usageLimit     Int?                               // Max times this code can be used
+  usedCount      Int       @default(0)              // Times used
+  expiresAt      DateTime?                          // Optional expiration
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id])
+}
+
+model User {
+  id             Int                     @id @default(autoincrement())
+  email          String                  @unique
+  password       String
+  name           String?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  status         UserStatus              @default(PENDING)
+  roles          Role[]                  @default([USER]) // general global roles, not per-org
+
+  memberships    OrganizationMembership[]
+  student        Student?
+  teacher        Teacher?
+}
+
+
+
+model Departments {
+  id             Int        @id @default(autoincrement())
+  name           String
+  organizationId Int
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  students       Student[]
+  batches        Batch[]
+  teachers       Teacher[]
+
+  FYPGroup FYPGroup[]
+}
+
+model Teacher {
+  id           Int       @id @default(autoincrement())
+  userId       Int       @unique
+  departmentId Int
+  designation  String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user         User       @relation(fields: [userId], references: [id])
+  department   Departments @relation(fields: [departmentId], references: [id])
+  assignments  Assignment[]
+  quizzes      Quiz[]
+}
+
+//
+// ACADEMIC STRUCTURE
+//
+
+model Batch {
+  id           Int        @id @default(autoincrement())
+  name         String
+  batchYear    Int
+  batchCode    String
+  departmentId Int
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  department   Departments @relation(fields: [departmentId], references: [id])
+  students     Student[]
+  gradingSchemes GradingScheme[]
+
+  FYPGroup FYPGroup[]
+}
+
+model Semester {
+  id        Int      @id @default(autoincrement())
+  name      String
+  semesterSeason SemesterSeason
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  students  Student[]
+  courses   Courses[]
+}
+
+model Student {
+  id           Int        @id @default(autoincrement())
+  userId       Int        @unique
+  name         String
+  email        String     @unique
+  rollNo       String     @unique
+  batchId      Int
+  departmentId Int
+  FYPGroupId   Int?
+  FYPProjectId Int?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  user         User        @relation(fields: [userId], references: [id])
+  department   Departments @relation(fields: [departmentId], references: [id])
+  batch        Batch       @relation(fields: [batchId], references: [id])
+  FYPGroup     FYPGroup?   @relation(fields: [FYPGroupId], references: [id])
+  FYPProject   FYPProjects? @relation(fields: [FYPProjectId], references: [id])
+
+  semesters    Semester[]
+  courses      Courses[]
+  quizAttempts QuizAttempt[]
+  assignmentSubmissions AssignmentSubmission[]
+}
+
+model Courses {
+  id              Int        @id @default(autoincrement())
+  name            String
+  code            String     @unique
+  courseSemesterId Int
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  courseSemester  Semester   @relation(fields: [courseSemesterId], references: [id])
+  students        Student[]
+  assignments     Assignment[]
+  quizzes         Quiz[]
+}
+
+//
+// FYP SYSTEM
+//
+
+model FYPGroup {
+  id           Int        @id @default(autoincrement())
+  name         String
+  maxMembers   Int
+  batchId      Int
+  departmentId Int
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  batch        Batch       @relation(fields: [batchId], references: [id])
+  department   Departments @relation(fields: [departmentId], references: [id])
+  students     Student[]
+  fypProject   FYPProjects?
+}
+
+model FYPProjects {
+  id          Int        @id @default(autoincrement())
+  title       String
+  description String
+  groupId     Int        @unique
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  group       FYPGroup   @relation(fields: [groupId], references: [id])
+  students    Student[]
+}
+
+//
+// ASSIGNMENTS & QUIZZES
+//
+
+model Assignment {
+  id         Int       @id @default(autoincrement())
+  title      String
+  details    String?
+  courseId   Int
+  teacherId  Int
+  dueDate    DateTime
+  createdAt  DateTime  @default(now())
+
+  course     Courses   @relation(fields: [courseId], references: [id])
+  teacher    Teacher   @relation(fields: [teacherId], references: [id])
+  submissions AssignmentSubmission[]
+}
+
+model AssignmentSubmission {
+  id            Int      @id @default(autoincrement())
+  assignmentId  Int
+  studentId     Int
+  submittedAt   DateTime @default(now())
+  fileUrl       String?
+  grade         Float?
+
+  assignment    Assignment @relation(fields: [assignmentId], references: [id])
+  student       Student    @relation(fields: [studentId], references: [id])
+}
+
+model Quiz {
+  id         Int       @id @default(autoincrement())
+  title      String
+  courseId   Int
+  teacherId  Int
+  createdAt  DateTime  @default(now())
+
+  course     Courses   @relation(fields: [courseId], references: [id])
+  teacher    Teacher   @relation(fields: [teacherId], references: [id])
+  questions  QuizQuestion[]
+  attempts   QuizAttempt[]
+}
+
+model QuizQuestion {
+  id        Int         @id @default(autoincrement())
+  quizId    Int
+  question  String
+  type      QuestionType
+  options   String[]   // For MCQs
+  answer    String
+
+  quiz      Quiz       @relation(fields: [quizId], references: [id])
+}
+
+model QuizAttempt {
+  id        Int       @id @default(autoincrement())
+  quizId    Int
+  studentId Int
+  score     Float
+  attemptedAt DateTime @default(now())
+
+  quiz      Quiz     @relation(fields: [quizId], references: [id])
+  student   Student  @relation(fields: [studentId], references: [id])
+}
+
+//
+// GRADING SYSTEM
+//
+
+model GradingScheme {
+  id         Int      @id @default(autoincrement())
+  title      String
+  isDefault  Boolean  @default(false)
+  batchId    Int?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  batch      Batch?   @relation(fields: [batchId], references: [id])
+  items      GradeItem[]
+}
+
+model GradeItem {
+  id              Int     @id @default(autoincrement())
+  schemeId        Int
+  minPercentage   Float
+  maxPercentage   Float
+  grade           String  // e.g., A+, B, C
+  gradePoint      Float   // e.g., 4.0, 3.5
+
+  scheme          GradingScheme @relation(fields: [schemeId], references: [id])
+}
