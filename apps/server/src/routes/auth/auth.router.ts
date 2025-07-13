@@ -1,19 +1,38 @@
 import express from "express";
-import {
-  httpRegisterUser,
-  httpLoginUser,
-  httpLogoutUser,
-  httpGetUser,
-  httpUpdateUser,
-  authenticate,
-} from "@/routes/auth/auth.controller";
+import * as authController from "./auth.controller";
+import { validate } from "@/middleware/validationMiddleware";
+import { authenticate, authorize } from "@/middleware/authMiddleware";
 
 const authRouter = express.Router();
 
-authRouter.post("/signup", httpRegisterUser);
-authRouter.post("/signin", httpLoginUser);
-authRouter.get("/me", authenticate, httpGetUser);
-authRouter.put("/me", authenticate, httpUpdateUser);
-authRouter.post("/logout", authenticate, httpLogoutUser);
+// Public routes
+authRouter.post("/register", validate("register"), authController.register);
+authRouter.post("/login", validate("login"), authController.login);
+authRouter.post(
+  "/refresh",
+  validate("refreshToken"),
+  authController.refreshToken
+);
+
+// Authenticated routes
+authRouter.use(authenticate); // ✅ Fix is here
+
+authRouter.post("/logout", authController.logout);
+authRouter.post("/logout-all", authController.logoutAll);
+authRouter.get("/profile", authController.getProfile);
+authRouter.put(
+  "/profile",
+  validate("updateProfile"),
+  authController.updateProfile
+);
+authRouter.put(
+  "/change-password",
+  validate("changePassword"),
+  authController.changePassword
+);
+authRouter.get("/validate", authController.validateToken);
+
+// Admin-only
+authRouter.get("/users", authorize(["admin"]), authController.getAllUsers);
 
 export default authRouter;
