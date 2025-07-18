@@ -318,9 +318,11 @@ export default function DashboardComponent() {
                       {stat.value}
                     </p>
                     <div className="flex items-center mt-2">
-                      {stat.trend === "up" ?
+                      {stat.trend === "up" ? (
                         <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
-                      : <ArrowDown className="w-4 h-4 text-red-600 mr-1" />}
+                      ) : (
+                        <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
+                      )}
                       <span
                         className={`text-sm font-medium ${stat.trend === "up" ? "text-green-600" : "text-red-600"}`}
                       >

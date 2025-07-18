@@ -1,4 +1,4 @@
-import type {UserRole} from "@repo/database/enums"
+import type { UserRole } from "@repo/database/enums";
 
 export interface User {
   id: string;

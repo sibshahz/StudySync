@@ -22,7 +22,7 @@ export default function SignInForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { login, isLoading } = useAuth();
+  const { login, isLoading, user } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,10 +32,14 @@ export default function SignInForm() {
     try {
       await login({ email, password });
       setTimeout(() => {
-        router.push("/dashboard");
-
-      },1000)
-
+        if (user?.roles.includes("ADMIN")) {
+          router.push("/dashboard");
+        } else if (user?.roles.includes("TEACHER")) {
+          router.push("/dashboard-teacher");
+        } else if (user?.roles.includes("STUDENT")) {
+          router.push("/lms");
+        }
+      }, 1000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     }

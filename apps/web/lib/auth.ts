@@ -76,7 +76,7 @@ export const authAPI = {
       throw new Error(error.message || "Login failed");
     }
 
-    const data =await response.json();
+    const data = await response.json();
 
     return data.data;
   },
@@ -106,7 +106,7 @@ export const authAPI = {
   },
 
   refreshToken: async (
-    refreshToken: string
+    refreshToken: string,
   ): Promise<{ token: string; refreshToken: string }> => {
     const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
       method: "POST",
@@ -115,7 +115,6 @@ export const authAPI = {
       },
       credentials: "include",
       body: JSON.stringify({ refreshToken }),
-
     });
 
     if (!response.ok) {

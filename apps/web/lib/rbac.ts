@@ -51,18 +51,32 @@ const rolePermissions: Record<Role, Permission[]> = {
 };
 
 // ✅ Updated to support multiple user roles
-export function hasPermission(userRoles: Role[], permission: Permission): boolean {
+export function hasPermission(
+  userRoles: Role[],
+  permission: Permission,
+): boolean {
   return userRoles.some((role) => rolePermissions[role]?.includes(permission));
 }
 
-export function hasAnyPermission(userRoles: Role[], permissions: Permission[]): boolean {
+export function hasAnyPermission(
+  userRoles: Role[],
+  permissions: Permission[],
+): boolean {
   return permissions.some((permission) => hasPermission(userRoles, permission));
 }
 
-export function hasAllPermissions(userRoles: Role[], permissions: Permission[]): boolean {
-  return permissions.every((permission) => hasPermission(userRoles, permission));
+export function hasAllPermissions(
+  userRoles: Role[],
+  permissions: Permission[],
+): boolean {
+  return permissions.every((permission) =>
+    hasPermission(userRoles, permission),
+  );
 }
 
-export function canAccessRoute(userRoles: Role[], requiredRoles: Role[]): boolean {
+export function canAccessRoute(
+  userRoles: Role[],
+  requiredRoles: Role[],
+): boolean {
   return userRoles.some((role) => requiredRoles.includes(role));
 }

@@ -30,7 +30,7 @@ class APIClient {
         }
         return config;
       },
-      (error) => Promise.reject(error)
+      (error) => Promise.reject(error),
     );
 
     // Response interceptor to handle 401 errors
@@ -44,7 +44,7 @@ class APIClient {
           }
         }
         return Promise.reject(error);
-      }
+      },
     );
   }
 
@@ -100,7 +100,7 @@ class APIClient {
 
   async request<T>(
     endpoint: string,
-    config: AxiosRequestConfig = {}
+    config: AxiosRequestConfig = {},
   ): Promise<T> {
     try {
       const response = await this.axiosInstance.request<T>({
@@ -125,7 +125,7 @@ class APIClient {
   async post<T>(
     endpoint: string,
     data?: any,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<T> {
     return this.request<T>(endpoint, {
       ...config,
@@ -137,7 +137,7 @@ class APIClient {
   async put<T>(
     endpoint: string,
     data?: any,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<T> {
     return this.request<T>(endpoint, {
       ...config,
@@ -149,7 +149,7 @@ class APIClient {
   async patch<T>(
     endpoint: string,
     data?: any,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<T> {
     return this.request<T>(endpoint, {
       ...config,
@@ -166,7 +166,7 @@ class APIClient {
   async uploadFile<T>(
     endpoint: string,
     file: File,
-    onUploadProgress?: (progress: number) => void
+    onUploadProgress?: (progress: number) => void,
   ): Promise<T> {
     const formData = new FormData();
     formData.append("file", file);
@@ -180,7 +180,7 @@ class APIClient {
       onUploadProgress: (progressEvent) => {
         if (onUploadProgress && progressEvent.total) {
           const progress = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
+            (progressEvent.loaded * 100) / progressEvent.total,
           );
           onUploadProgress(progress);
         }
@@ -200,5 +200,5 @@ class APIClient {
 }
 
 export const apiClient = new APIClient(
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
 );

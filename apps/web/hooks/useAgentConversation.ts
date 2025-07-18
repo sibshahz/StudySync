@@ -110,7 +110,7 @@ export const useAgentConversation = ({
 
           const startTime = Math.max(
             nextAudioTimeRef.current,
-            audioContextRef.current.currentTime
+            audioContextRef.current.currentTime,
           );
           source.start(startTime);
           nextAudioTimeRef.current = startTime + audioBuffer.duration;
@@ -132,7 +132,7 @@ export const useAgentConversation = ({
       audioQueueRef.current.push(base64Audio);
       processAudioQueue();
     },
-    [processAudioQueue]
+    [processAudioQueue],
   );
 
   const cleanupWebSocket = useCallback(() => {
@@ -245,7 +245,7 @@ export const useAgentConversation = ({
           case "conversation_initiation_metadata":
             console.log(
               "Metadata received:",
-              data.conversation_initiation_metadata_event
+              data.conversation_initiation_metadata_event,
             );
             break;
 
@@ -257,7 +257,7 @@ export const useAgentConversation = ({
           "Failed to handle WebSocket message",
           err,
           "Raw data:",
-          event.data
+          event.data,
         );
       }
     };

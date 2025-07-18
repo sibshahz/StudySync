@@ -19,7 +19,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const matchedRoute = Object.keys(protectedRoutes).find((route) =>
-    pathname.startsWith(route)
+    pathname.startsWith(route),
   );
 
   if (!matchedRoute) return NextResponse.next();
@@ -35,15 +35,19 @@ export async function middleware(request: NextRequest) {
   const token = cookieToken || headerToken;
 
   if (!token) {
-    console.log("*** TOKEN NOT FOUND: ", token)
+    console.log("*** TOKEN NOT FOUND: ", token);
     return NextResponse.redirect(new URL("/signin", request.url));
   }
 
   try {
-    const { payload }: { payload: JWTPayload } = await jwtVerify(token, secret, {
-      issuer: JWT_ISSUER,
-      audience: JWT_AUDIENCE,
-    });
+    const { payload }: { payload: JWTPayload } = await jwtVerify(
+      token,
+      secret,
+      {
+        issuer: JWT_ISSUER,
+        audience: JWT_AUDIENCE,
+      },
+    );
 
     const userRole = payload.role as string;
 

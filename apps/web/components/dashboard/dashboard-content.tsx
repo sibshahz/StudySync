@@ -1,16 +1,22 @@
-"use client"
+"use client";
 
-import { useAuth } from "@/contexts/auth-context"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { hasPermission, PERMISSIONS } from "@/lib/rbac"
+import { useAuth } from "@/contexts/auth-context";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { hasPermission, PERMISSIONS } from "@/lib/rbac";
 
 export default function DashboardContent() {
-  const { user, logout } = useAuth()
+  const { user, logout } = useAuth();
 
   const handleLogout = async () => {
-    await logout()
-  }
+    await logout();
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
@@ -59,5 +65,5 @@ export default function DashboardContent() {
         </div>
       </div>
     </div>
-  )
+  );
 }
