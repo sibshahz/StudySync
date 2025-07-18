@@ -23,6 +23,7 @@
     "@types/multer": "^2.0.0"
   },
   "dependencies": {
+    "@repo/database": "*",
     "@elevenlabs/elevenlabs-js": "^2.5.0",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",

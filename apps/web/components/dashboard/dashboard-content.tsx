@@ -26,14 +26,14 @@ export default function DashboardContent() {
           <Card>
             <CardHeader>
               <CardTitle>Welcome, {user?.name}!</CardTitle>
-              <CardDescription>Role: {user?.role}</CardDescription>
+              <CardDescription>Role: {user?.roles}</CardDescription>
             </CardHeader>
             <CardContent>
               <p>You are successfully authenticated.</p>
             </CardContent>
           </Card>
 
-          {user && hasPermission(user.role, PERMISSIONS.MANAGE_USERS) && (
+          {user && hasPermission(user.roles, PERMISSIONS.MANAGE_USERS) && (
             <Card>
               <CardHeader>
                 <CardTitle>User Management</CardTitle>
@@ -45,7 +45,7 @@ export default function DashboardContent() {
             </Card>
           )}
 
-          {user && hasPermission(user.role, PERMISSIONS.MODERATE_CONTENT) && (
+          {user && hasPermission(user.roles, PERMISSIONS.MODERATE_CONTENT) && (
             <Card>
               <CardHeader>
                 <CardTitle>Content Moderation</CardTitle>

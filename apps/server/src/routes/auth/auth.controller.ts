@@ -25,6 +25,11 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   try {
     const result = await authService.login(req.body);
+res.setHeader('Set-Cookie', [
+  `token=${result.token}; HttpOnly; Path=/; Secure; Max-Age=900`,
+  `refreshToken=${result.refreshToken}; HttpOnly; Path=/; Secure; Max-Age=604800`,
+]);
+
     res.status(200).json({
       success: true,
       message: "Login successful",
@@ -74,6 +79,9 @@ export const logoutAll = async (req: Request, res: Response) => {
 
 export const getProfile = async (req: Request, res: Response) => {
   try {
+    // res.status(200).json({request: req})
+    // return;
+
     const profile = await authService.getProfile(req.user?.id);
     res.status(200).json({ success: true, data: profile });
   } catch (error: any) {

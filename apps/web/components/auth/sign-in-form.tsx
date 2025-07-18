@@ -31,7 +31,11 @@ export default function SignInForm() {
 
     try {
       await login({ email, password });
-      router.push("/dashboard");
+      setTimeout(() => {
+        router.push("/dashboard");
+
+      },1000)
+
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     }

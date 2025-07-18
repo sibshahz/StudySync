@@ -1,8 +1,9 @@
 import jwt, { JwtPayload, SignOptions, Secret } from "jsonwebtoken";
 import crypto from "crypto";
+import "dotenv/config"
+if (!process.env.JWT_SECRET) throw new Error("Missing JWT_SECRET in env");
 
-const accessTokenSecret: Secret =
-  process.env.JWT_ACCESS_SECRET ?? "default-access-secret";
+const accessTokenSecret: Secret = process.env.JWT_SECRET;
 const refreshTokenSecret: Secret =
   process.env.JWT_REFRESH_SECRET ?? "default-refresh-secret";
 
@@ -10,8 +11,8 @@ const accessTokenExpiry: string = process.env.JWT_ACCESS_EXPIRY ?? "15m";
 const refreshTokenExpiry: string = process.env.JWT_REFRESH_EXPIRY ?? "7d";
 
 const defaultJwtOptions: SignOptions = {
-  issuer: "your-app-name",
-  audience: "your-app-users",
+  issuer: "study-sync",
+  audience: "study-sync-users",
 };
 
 export interface JwtUserPayload {

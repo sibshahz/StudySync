@@ -109,8 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (credentials: LoginCredentials) => {
     try {
       dispatch({ type: "SET_LOADING", payload: true })
-      const response = await authAPI.login(credentials)
-
+      const response = await authAPI.login(credentials);
       tokenStorage.setToken(response.token)
       tokenStorage.setRefreshToken(response.refreshToken)
 

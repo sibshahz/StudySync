@@ -1,13 +1,15 @@
+import type {UserRole} from "@repo/database/enums"
+
 export interface User {
   id: string;
   email: string;
   name: string;
-  role: "admin" | "user" | "moderator";
+  roles: UserRole[];
   avatar?: string;
   organizations?: {
     id: string;
     name: string;
-    role: "admin" | "member";
+    role: UserRole;
   }[];
 }
 
@@ -37,4 +39,4 @@ export interface AuthResponse {
   refreshToken: string;
 }
 
-export type Role = "admin" | "user" | "moderator";
+export type Role = UserRole;

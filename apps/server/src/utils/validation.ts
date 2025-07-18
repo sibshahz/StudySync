@@ -1,4 +1,4 @@
-const Joi = require("joi");
+import Joi from "joi";
 
 const validationSchemas = {
   // Registration validation
@@ -16,12 +16,12 @@ const validationSchemas = {
 
     password: Joi.string()
       .min(8)
-      .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])/)
+      // .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])/)
       .required()
       .messages({
         "string.min": "Password must be at least 8 characters long",
-        "string.pattern.base":
-          "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character",
+        // "string.pattern.base":
+        //   "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character",
         "any.required": "Password is required",
       }),
 

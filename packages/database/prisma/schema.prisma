@@ -49,15 +49,14 @@ model OrganizationMembership {
   id             Int          @id @default(autoincrement())
   userId         Int
   organizationId Int
-  role           Role         // Role in this specific organization
+  role           Role
   createdAt      DateTime     @default(now())
 
   user           User         @relation(fields: [userId], references: [id])
   organization   Organization @relation(fields: [organizationId], references: [id])
 
-  @@unique([userId, organizationId]) // prevent duplicate memberships
+  @@unique([userId, organizationId])
 }
-
 
 model Organization {
   id           Int                     @id @default(autoincrement())
@@ -72,12 +71,12 @@ model Organization {
 
 model JoinCode {
   id             Int       @id @default(autoincrement())
-  code           String    @unique                // Numeric or alphanumeric code
-  organizationId Int                                // Belongs to an org
-  role           Role                               // Role this code is for (STUDENT, TEACHER, etc.)
-  usageLimit     Int?                               // Max times this code can be used
-  usedCount      Int       @default(0)              // Times used
-  expiresAt      DateTime?                          // Optional expiration
+  code           String    @unique
+  organizationId Int
+  role           Role
+  usageLimit     Int?
+  usedCount      Int       @default(0)
+  expiresAt      DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
@@ -91,15 +90,24 @@ model User {
   name           String?
   createdAt      DateTime                @default(now())
   updatedAt      DateTime                @updatedAt
+  refreshTokens  RefreshToken[]
   status         UserStatus              @default(PENDING)
-  roles          Role[]                  @default([USER]) // general global roles, not per-org
+  roles          Role[]                  @default([USER])
+
 
   memberships    OrganizationMembership[]
   student        Student?
   teacher        Teacher?
 }
 
-
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
 
 model Departments {
   id             Int        @id @default(autoincrement())
@@ -112,8 +120,7 @@ model Departments {
   students       Student[]
   batches        Batch[]
   teachers       Teacher[]
-
-  FYPGroup FYPGroup[]
+  FYPGroups      FYPGroup[]
 }
 
 model Teacher {
@@ -135,57 +142,54 @@ model Teacher {
 //
 
 model Batch {
-  id           Int        @id @default(autoincrement())
-  name         String
-  batchYear    Int
-  batchCode    String
-  departmentId Int
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  id             Int            @id @default(autoincrement())
+  name           String
+  batchYear      Int
+  batchCode      String
+  departmentId   Int
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 
-  department   Departments @relation(fields: [departmentId], references: [id])
-  students     Student[]
+  department     Departments     @relation(fields: [departmentId], references: [id])
+  students       Student[]
   gradingSchemes GradingScheme[]
-
-  FYPGroup FYPGroup[]
+  FYPGroups      FYPGroup[]
 }
 
 model Semester {
-  id        Int      @id @default(autoincrement())
-  name      String
+  id             Int             @id @default(autoincrement())
+  name           String
   semesterSeason SemesterSeason
-  startDate DateTime
-  endDate   DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  startDate      DateTime
+  endDate        DateTime
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 
-  students  Student[]
-  courses   Courses[]
+  students       Student[]
+  courses        Courses[]
 }
 
 model Student {
-  id           Int        @id @default(autoincrement())
-  userId       Int        @unique
-  name         String
-  email        String     @unique
-  rollNo       String     @unique
-  batchId      Int
-  departmentId Int
-  FYPGroupId   Int?
-  FYPProjectId Int?
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  id                     Int                   @id @default(autoincrement())
+  userId                 Int                   @unique
+  name                   String
+  email                  String                @unique
+  rollNo                 String                @unique
+  batchId                Int
+  departmentId           Int
+  FYPGroupId             Int?
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
 
-  user         User        @relation(fields: [userId], references: [id])
-  department   Departments @relation(fields: [departmentId], references: [id])
-  batch        Batch       @relation(fields: [batchId], references: [id])
-  FYPGroup     FYPGroup?   @relation(fields: [FYPGroupId], references: [id])
-  FYPProject   FYPProjects? @relation(fields: [FYPProjectId], references: [id])
+  user                   User                  @relation(fields: [userId], references: [id])
+  department             Departments           @relation(fields: [departmentId], references: [id])
+  batch                  Batch                 @relation(fields: [batchId], references: [id])
+  FYPGroup               FYPGroup?             @relation(fields: [FYPGroupId], references: [id])
 
-  semesters    Semester[]
-  courses      Courses[]
-  quizAttempts QuizAttempt[]
-  assignmentSubmissions AssignmentSubmission[]
+  semesters              Semester[]
+  courses                Courses[]
+  quizAttempts           QuizAttempt[]
+  assignmentSubmissions  AssignmentSubmission[]
 }
 
 model Courses {
@@ -203,34 +207,45 @@ model Courses {
 }
 
 //
-// FYP SYSTEM
+// FYP SYSTEM (Updated)
 //
 
+model FYPProjects {
+  id          Int                    @id @default(autoincrement())
+  title       String
+  description String
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+
+  assignments FYPProjectAssignment[]
+}
+
 model FYPGroup {
-  id           Int        @id @default(autoincrement())
+  id           Int                    @id @default(autoincrement())
   name         String
   maxMembers   Int
   batchId      Int
   departmentId Int
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
 
-  batch        Batch       @relation(fields: [batchId], references: [id])
-  department   Departments @relation(fields: [departmentId], references: [id])
+  batch        Batch                  @relation(fields: [batchId], references: [id])
+  department   Departments            @relation(fields: [departmentId], references: [id])
   students     Student[]
-  fypProject   FYPProjects?
+
+  assignments  FYPProjectAssignment[]
 }
 
-model FYPProjects {
-  id          Int        @id @default(autoincrement())
-  title       String
-  description String
-  groupId     Int        @unique
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+model FYPProjectAssignment {
+  id          Int         @id @default(autoincrement())
+  projectId   Int
+  groupId     Int
+  assignedAt  DateTime    @default(now())
 
-  group       FYPGroup   @relation(fields: [groupId], references: [id])
-  students    Student[]
+  project     FYPProjects @relation(fields: [projectId], references: [id])
+  group       FYPGroup    @relation(fields: [groupId], references: [id])
+
+  @@unique([projectId, groupId])
 }
 
 //
@@ -252,10 +267,10 @@ model Assignment {
 }
 
 model AssignmentSubmission {
-  id            Int      @id @default(autoincrement())
+  id            Int        @id @default(autoincrement())
   assignmentId  Int
   studentId     Int
-  submittedAt   DateTime @default(now())
+  submittedAt   DateTime   @default(now())
   fileUrl       String?
   grade         Float?
 
@@ -281,21 +296,21 @@ model QuizQuestion {
   quizId    Int
   question  String
   type      QuestionType
-  options   String[]   // For MCQs
+  options   String[]
   answer    String
 
-  quiz      Quiz       @relation(fields: [quizId], references: [id])
+  quiz      Quiz        @relation(fields: [quizId], references: [id])
 }
 
 model QuizAttempt {
-  id        Int       @id @default(autoincrement())
-  quizId    Int
-  studentId Int
-  score     Float
+  id         Int       @id @default(autoincrement())
+  quizId     Int
+  studentId  Int
+  score      Float
   attemptedAt DateTime @default(now())
 
-  quiz      Quiz     @relation(fields: [quizId], references: [id])
-  student   Student  @relation(fields: [studentId], references: [id])
+  quiz       Quiz      @relation(fields: [quizId], references: [id])
+  student    Student   @relation(fields: [studentId], references: [id])
 }
 
 //
@@ -303,24 +318,24 @@ model QuizAttempt {
 //
 
 model GradingScheme {
-  id         Int      @id @default(autoincrement())
+  id         Int           @id @default(autoincrement())
   title      String
-  isDefault  Boolean  @default(false)
+  isDefault  Boolean        @default(false)
   batchId    Int?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
 
-  batch      Batch?   @relation(fields: [batchId], references: [id])
+  batch      Batch?         @relation(fields: [batchId], references: [id])
   items      GradeItem[]
 }
 
 model GradeItem {
-  id              Int     @id @default(autoincrement())
+  id              Int           @id @default(autoincrement())
   schemeId        Int
   minPercentage   Float
   maxPercentage   Float
-  grade           String  // e.g., A+, B, C
-  gradePoint      Float   // e.g., 4.0, 3.5
+  grade           String
+  gradePoint      Float
 
   scheme          GradingScheme @relation(fields: [schemeId], references: [id])
 }

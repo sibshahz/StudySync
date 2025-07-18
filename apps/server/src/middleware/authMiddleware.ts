@@ -21,29 +21,34 @@ export const authenticate = async (
   next: NextFunction
 ) => {
   try {
-    const authHeader = req.headers.authorization;
+    const token = req.cookies?.token;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      res.status(401).json({
+    if (!token) {
+      return res.status(401).json({
         success: false,
         message: "Access token is required",
       });
-      return;
     }
 
-    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-
-    const decoded = jwtService.verifyAccessToken(token);
+    const decoded = jwtService.verifyAccessToken(token); // You might want to wrap in try-catch
     const user = await authService.getProfile(decoded.id);
+    console.log("*** DECODED USER: ", user)
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found in authenticate method",
+      });
+    }
 
     req.user = user;
     next();
-  } catch {
+  } catch (error) {
+    console.error("Auth error:", error);
     res.status(401).json({
       success: false,
       message: "Invalid or expired token",
     });
-    return;
   }
 };
 
@@ -51,7 +56,6 @@ export const authenticate = async (
  * Authorization middleware factory
  * Ensures user has required role(s)
  */
-
 export const authorize = (roles: string[] | string) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.user) {
@@ -59,21 +63,23 @@ export const authorize = (roles: string[] | string) => {
         success: false,
         message: "Authentication required",
       });
-      return; // important
+      return;
     }
 
-    const userRole = req.user.role;
+    const userRoles = Array.isArray(req.user.role) ? req.user.role : [req.user.role];
     const requiredRoles = Array.isArray(roles) ? roles : [roles];
 
-    if (!requiredRoles.includes(userRole || "")) {
+    const hasPermission = requiredRoles.some(role => userRoles.includes(role));
+
+    if (!hasPermission) {
       res.status(403).json({
         success: false,
         message: "Insufficient permissions",
       });
-      return; // important
+      return;
     }
 
-    next(); // ✅ only if allowed
+    next();
   };
 };
 
@@ -87,16 +93,17 @@ export const optionalAuth = async (
   next: NextFunction
 ) => {
   try {
-    const authHeader = req.headers.authorization;
+    const token = req.cookies?.token;
 
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      const token = authHeader.substring(7);
+    if (token) {
       const decoded = jwtService.verifyAccessToken(token);
       const user = await authService.getProfile(decoded.id);
-      req.user = user;
+      if (user) {
+        req.user = user;
+      }
     }
   } catch {
-    // Optional auth: ignore token errors
+    // Ignore if token is missing or invalid
   }
 
   next();

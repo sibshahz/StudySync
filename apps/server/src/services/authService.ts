@@ -1,41 +1,8 @@
 import bcrypt from "bcryptjs";
 import * as jwtService from "./jwtService";
-
-interface User {
-  id: string;
-  email: string;
-  password: string;
-  name: string;
-  role: "admin" | "user";
-  isEmailVerified: boolean;
-  createdAt: Date;
-  refreshTokens: string[];
-  referralCode?: string | null;
-}
-
-// Mock database
-const users: User[] = [
-  {
-    id: "1",
-    email: "admin@example.com",
-    password: "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi",
-    name: "Admin User",
-    role: "admin",
-    isEmailVerified: true,
-    createdAt: new Date(),
-    refreshTokens: [],
-  },
-  {
-    id: "2",
-    email: "user@example.com",
-    password: "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi",
-    name: "Regular User",
-    role: "user",
-    isEmailVerified: true,
-    createdAt: new Date(),
-    refreshTokens: [],
-  },
-];
+import { prisma } from "@repo/database";
+import { Role } from "@repo/database";
+import { JwtPayload } from "jsonwebtoken";
 
 interface RegisterData {
   email: string;
@@ -49,15 +16,13 @@ interface LoginData {
   password: string;
 }
 
-interface Tokens {
-  accessToken: string;
-  refreshToken: string;
-}
-
 export const register = async (data: RegisterData) => {
   const { email, password, name, referralCode } = data;
 
-  const existingUser = users.find((user) => user.email === email);
+  const existingUser = await prisma.user.findUnique({
+    where: { email },
+  });
+
   if (existingUser) throw new Error("User already exists with this email");
 
   if (referralCode) {
@@ -67,60 +32,111 @@ export const register = async (data: RegisterData) => {
 
   const hashedPassword = await bcrypt.hash(password, 12);
 
-  const newUser: User = {
-    id: (users.length + 1).toString(),
-    email,
-    password: hashedPassword,
-    name,
-    role: "user",
-    isEmailVerified: false,
-    referralCode: referralCode || null,
-    createdAt: new Date(),
-    refreshTokens: [],
-  };
+  const createdUser = await prisma.user.create({
+    data: {
+      email,
+      password: hashedPassword,
+      name,
+      roles: [Role.ADMIN],
+    },
+  });
 
-  users.push(newUser);
+  const tokens = jwtService.generateTokenPair({
+    id: createdUser.id.toString(),
+    email: createdUser.email,
+    role: Role.ADMIN,
+    name: createdUser.name ?? undefined,
+  });
 
-  const tokens = jwtService.generateTokenPair(newUser);
-  newUser.refreshTokens.push(tokens.refreshToken);
+  const decoded = jwtService.verifyRefreshToken(tokens.refreshToken);
+  const expiresAt = new Date(decoded.exp! * 1000);
 
-  const { password: _, refreshTokens, ...userResponse } = newUser;
+  await prisma.refreshToken.create({
+    data: {
+      token: tokens.refreshToken,
+      userId: createdUser.id,
+      expiresAt,
+    },
+  });
+
+  const { password: _, ...userResponse } = createdUser;
   return { user: userResponse, ...tokens };
 };
 
 export const login = async (data: LoginData) => {
   const { email, password } = data;
 
-  const user = users.find((u) => u.email === email);
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
+
   if (!user) throw new Error("Invalid credentials");
 
-  const validPassword = await bcrypt.compare(password, user.password);
-  if (!validPassword) throw new Error("Invalid credentials");
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) throw new Error("Invalid credentials");
 
-  if (!user.isEmailVerified)
-    throw new Error("Please verify your email before logging in");
+  const tokens = jwtService.generateTokenPair({
+    id: user.id.toString(),
+    email: user.email,
+    role: user.roles[0],
+    name: user.name ?? undefined,
+  });
 
-  const tokens = jwtService.generateTokenPair(user);
-  user.refreshTokens.push(tokens.refreshToken);
-  if (user.refreshTokens.length > 5) {
-    user.refreshTokens = user.refreshTokens.slice(-5);
-  }
+  const decoded = jwtService.verifyRefreshToken(tokens.refreshToken);
+  const expiresAt = new Date(decoded.exp! * 1000);
 
-  const { password: _, refreshTokens, ...userResponse } = user;
+  await prisma.refreshToken.create({
+    data: {
+      token: tokens.refreshToken,
+      userId: user.id,
+      expiresAt,
+    },
+  });
+
+  const { password: _, ...userResponse } = user;
   return { user: userResponse, ...tokens };
 };
 
 export const refreshToken = async (refreshToken: string) => {
   try {
     const decoded = jwtService.verifyRefreshToken(refreshToken);
-    const user = users.find((u) => u.id === decoded.id);
-    if (!user || !user.refreshTokens.includes(refreshToken)) {
-      throw new Error("Invalid refresh token");
-    }
 
-    const tokens = jwtService.generateTokenPair(user);
-    const index = user.refreshTokens.indexOf(refreshToken);
-    user.refreshTokens[index] = tokens.refreshToken;
+    const tokenRecord = await prisma.refreshToken.findFirst({
+      where: {
+        token: refreshToken,
+        userId: parseInt(decoded.id),
+        expiresAt: {
+          gt: new Date(),
+        },
+      },
+    });
+
+    if (!tokenRecord) throw new Error("Invalid or expired refresh token");
+
+    const user = await prisma.user.findUnique({
+      where: { id: tokenRecord.userId },
+    });
+
+    if (!user) throw new Error("User not found");
+
+    const tokens = jwtService.generateTokenPair({
+      id: user.id.toString(),
+      email: user.email,
+      role: user.roles[0],
+      name: user.name ?? undefined,
+    });
+
+    const newDecoded = jwtService.verifyRefreshToken(tokens.refreshToken);
+    const newExpiresAt = new Date(newDecoded.exp! * 1000);
+
+    await prisma.refreshToken.update({
+      where: { id: tokenRecord.id },
+      data: {
+        token: tokens.refreshToken,
+        expiresAt: newExpiresAt,
+      },
+    });
+
     return tokens;
   } catch {
     throw new Error("Invalid or expired refresh token");
@@ -128,38 +144,62 @@ export const refreshToken = async (refreshToken: string) => {
 };
 
 export const logout = async (refreshToken: string, userId: string) => {
-  const user = users.find((u) => u.id === userId);
-  if (user && refreshToken) {
-    user.refreshTokens = user.refreshTokens.filter((t) => t !== refreshToken);
-  }
+  await prisma.refreshToken.deleteMany({
+    where: {
+      token: refreshToken,
+      userId: parseInt(userId),
+    },
+  });
 };
 
 export const logoutAll = async (userId: string) => {
-  const user = users.find((u) => u.id === userId);
-  if (user) {
-    user.refreshTokens = [];
-  }
+  await prisma.refreshToken.deleteMany({
+    where: {
+      userId: parseInt(userId),
+    },
+  });
 };
 
 export const getProfile = async (userId: string) => {
-  const user = users.find((u) => u.id === userId);
+  const user = await prisma.user.findUnique({
+    where: { id: parseInt(userId) },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      roles: true,
+      status: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
   if (!user) throw new Error("User not found");
-  const { password, refreshTokens, ...profile } = user;
-  return profile;
+  return user;
 };
 
 export const updateProfile = async (
   userId: string,
-  updateData: Partial<Pick<User, "name" | "email">>
+  updateData: { name?: string; email?: string }
 ) => {
-  const user = users.find((u) => u.id === userId);
-  if (!user) throw new Error("User not found");
+  const updatedUser = await prisma.user.update({
+    where: { id: parseInt(userId) },
+    data: {
+      name: updateData.name,
+      email: updateData.email,
+    },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      roles: true,
+      status: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
 
-  if (updateData.name !== undefined) user.name = updateData.name;
-  if (updateData.email !== undefined) user.email = updateData.email;
-
-  const { password, refreshTokens, ...profile } = user;
-  return profile;
+  return updatedUser;
 };
 
 export const changePassword = async (
@@ -167,36 +207,45 @@ export const changePassword = async (
   currentPassword: string,
   newPassword: string
 ) => {
-  const user = users.find((u) => u.id === userId);
+  const user = await prisma.user.findUnique({
+    where: { id: parseInt(userId) },
+  });
+
   if (!user) throw new Error("User not found");
 
   const isMatch = await bcrypt.compare(currentPassword, user.password);
   if (!isMatch) throw new Error("Current password is incorrect");
 
-  user.password = await bcrypt.hash(newPassword, 12);
-  user.refreshTokens = [];
+  const newHashed = await bcrypt.hash(newPassword, 12);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      password: newHashed,
+    },
+  });
+
+  await prisma.refreshToken.deleteMany({
+    where: {
+      userId: user.id,
+    },
+  });
+};
+
+export const getAllUsers = async () => {
+  return await prisma.user.findMany({
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      roles: true,
+      status: true,
+      createdAt: true,
+    },
+  });
 };
 
 export const validateReferralCode = async (code: string): Promise<boolean> => {
   const validCodes = ["WELCOME2024", "FRIEND50", "SPECIAL100"];
   return validCodes.includes(code);
-};
-
-export const getAllUsers = async (filters: {
-  role?: string;
-  isEmailVerified?: boolean;
-}) => {
-  let filteredUsers = users.map(({ password, refreshTokens, ...u }) => u);
-
-  if (filters.role) {
-    filteredUsers = filteredUsers.filter((u) => u.role === filters.role);
-  }
-
-  if (filters.isEmailVerified !== undefined) {
-    filteredUsers = filteredUsers.filter(
-      (u) => u.isEmailVerified === filters.isEmailVerified
-    );
-  }
-
-  return filteredUsers;
 };

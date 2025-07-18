@@ -25,11 +25,12 @@ export function ProtectedRoute({
   const { isAuthenticated, isLoading, user } = useAuth()
   const router = useRouter()
 
+
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isLoading && !isAuthenticated && !user) {
       router.push(redirectTo)
     }
-  }, [isAuthenticated, isLoading, router, redirectTo])
+  }, [isAuthenticated, isLoading, router, redirectTo,user])
 
   if (isLoading) {
     return (
@@ -48,7 +49,7 @@ export function ProtectedRoute({
     return null // Will redirect via useEffect
   }
 
-  if (requiredRoles.length > 0 && user && !canAccessRoute(user.role, requiredRoles)) {
+  if (requiredRoles.length > 0 && user && !canAccessRoute(user.roles, requiredRoles)) {
     if (fallback) {
       return <>{fallback}</>
     }
@@ -57,7 +58,7 @@ export function ProtectedRoute({
       <div className="min-h-screen flex items-center justify-center">
         <Card className="w-96">
           <CardContent className="text-center p-6">
-            <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
+            <h2 className="text-xl font-semibold mb-2">Access Denied {JSON.stringify(user)}</h2>
             <p className="text-muted-foreground">You don't have permission to access this page.</p>
           </CardContent>
         </Card>

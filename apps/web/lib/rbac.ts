@@ -1,10 +1,7 @@
-import type { Role } from "@/types/auth"
+import type { Role } from "@/types/auth";
+import { UserRole } from "@repo/database/enums";
 
-export const ROLES = {
-  ADMIN: "admin" as const,
-  MODERATOR: "moderator" as const,
-  USER: "user" as const,
-}
+export const ROLES = UserRole;
 
 export const PERMISSIONS = {
   // Admin permissions
@@ -21,12 +18,12 @@ export const PERMISSIONS = {
   CREATE_CONTENT: "create_content",
   EDIT_OWN_CONTENT: "edit_own_content",
   VIEW_CONTENT: "view_content",
-} as const
+} as const;
 
-type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS]
+type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
 
 const rolePermissions: Record<Role, Permission[]> = {
-  admin: [
+  ADMIN: [
     PERMISSIONS.MANAGE_USERS,
     PERMISSIONS.MANAGE_ROLES,
     PERMISSIONS.VIEW_ANALYTICS,
@@ -37,28 +34,35 @@ const rolePermissions: Record<Role, Permission[]> = {
     PERMISSIONS.EDIT_OWN_CONTENT,
     PERMISSIONS.VIEW_CONTENT,
   ],
-  moderator: [
+  TEACHER: [
     PERMISSIONS.MODERATE_CONTENT,
     PERMISSIONS.VIEW_REPORTS,
     PERMISSIONS.CREATE_CONTENT,
     PERMISSIONS.EDIT_OWN_CONTENT,
     PERMISSIONS.VIEW_CONTENT,
   ],
-  user: [PERMISSIONS.CREATE_CONTENT, PERMISSIONS.EDIT_OWN_CONTENT, PERMISSIONS.VIEW_CONTENT],
+  STUDENT: [
+    PERMISSIONS.CREATE_CONTENT,
+    PERMISSIONS.EDIT_OWN_CONTENT,
+    PERMISSIONS.VIEW_CONTENT,
+  ],
+  STAFF: [],
+  USER: [],
+};
+
+// ✅ Updated to support multiple user roles
+export function hasPermission(userRoles: Role[], permission: Permission): boolean {
+  return userRoles.some((role) => rolePermissions[role]?.includes(permission));
 }
 
-export function hasPermission(userRole: Role, permission: Permission): boolean {
-  return rolePermissions[userRole]?.includes(permission) || false
+export function hasAnyPermission(userRoles: Role[], permissions: Permission[]): boolean {
+  return permissions.some((permission) => hasPermission(userRoles, permission));
 }
 
-export function hasAnyPermission(userRole: Role, permissions: Permission[]): boolean {
-  return permissions.some((permission) => hasPermission(userRole, permission))
+export function hasAllPermissions(userRoles: Role[], permissions: Permission[]): boolean {
+  return permissions.every((permission) => hasPermission(userRoles, permission));
 }
 
-export function hasAllPermissions(userRole: Role, permissions: Permission[]): boolean {
-  return permissions.every((permission) => hasPermission(userRole, permission))
-}
-
-export function canAccessRoute(userRole: Role, requiredRoles: Role[]): boolean {
-  return requiredRoles.includes(userRole)
+export function canAccessRoute(userRoles: Role[], requiredRoles: Role[]): boolean {
+  return userRoles.some((role) => requiredRoles.includes(role));
 }

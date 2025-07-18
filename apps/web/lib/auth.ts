@@ -1,7 +1,7 @@
 import type { AuthResponse, User } from "@/types/auth";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/v1";
 
 // Token management
 export const tokenStorage = {
@@ -67,6 +67,7 @@ export const authAPI = {
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
       body: JSON.stringify(credentials),
     });
 
@@ -75,7 +76,9 @@ export const authAPI = {
       throw new Error(error.message || "Login failed");
     }
 
-    return response.json();
+    const data =await response.json();
+
+    return data.data;
   },
 
   signup: async (credentials: {
@@ -84,11 +87,12 @@ export const authAPI = {
     name: string;
     referralCode?: string;
   }): Promise<AuthResponse> => {
-    const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
       body: JSON.stringify(credentials),
     });
 
@@ -97,7 +101,8 @@ export const authAPI = {
       throw new Error(error.message || "Signup failed");
     }
 
-    return response.json();
+    const data = await response.json();
+    return data.data;
   },
 
   refreshToken: async (
@@ -108,7 +113,9 @@ export const authAPI = {
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
       body: JSON.stringify({ refreshToken }),
+
     });
 
     if (!response.ok) {
@@ -121,15 +128,16 @@ export const authAPI = {
   getProfile: async (token: string): Promise<User> => {
     const response = await fetch(`${API_BASE_URL}/auth/profile`, {
       headers: {
-        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
+      credentials: "include",
     });
 
     if (!response.ok) {
       throw new Error("Failed to get profile");
     }
-
-    return response.json();
+    const data = await response.json();
+    return data.data;
   },
 
   logout: async (token: string): Promise<void> => {
@@ -138,6 +146,7 @@ export const authAPI = {
       headers: {
         Authorization: `Bearer ${token}`,
       },
+      credentials: "include",
     });
   },
 };

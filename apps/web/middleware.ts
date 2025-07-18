@@ -1,48 +1,59 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose/jwt/verify";
+import { NextRequest, NextResponse } from "next/server";
+import { jwtVerify, JWTPayload } from "jose";
+import { UserRole } from "@repo/database/enums";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "your-secret-key"
-);
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+const JWT_ISSUER = "study-sync";
+const JWT_AUDIENCE = "study-sync-users";
 
-// Define protected routes and their required roles
+const encoder = new TextEncoder();
+const secret = encoder.encode(JWT_SECRET);
+
 const protectedRoutes: Record<string, string[]> = {
-  "/dashboard": ["user", "moderator", "admin"],
-  "/admin": ["admin"],
-  "/moderator": ["moderator", "admin"],
+  "/dashboard": [UserRole.ADMIN],
+  "/dashboard/admin": [UserRole.ADMIN],
+  "/moderator": [UserRole.STAFF, UserRole.ADMIN],
 };
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Check if the route needs protection
-  const requiredRoles = protectedRoutes[pathname];
-  if (!requiredRoles) {
-    return NextResponse.next();
-  }
+  const matchedRoute = Object.keys(protectedRoutes).find((route) =>
+    pathname.startsWith(route)
+  );
 
-  // Get token from cookie or header
-  const token =
-    request.cookies.get("token")?.value ||
-    request.headers.get("authorization")?.replace("Bearer ", "");
+  if (!matchedRoute) return NextResponse.next();
+
+  const requiredRoles = protectedRoutes[matchedRoute];
+
+  const cookieToken = request.cookies.get("token")?.value;
+  const authHeader = request.headers.get("authorization");
+  const headerToken = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : undefined;
+
+  const token = cookieToken || headerToken;
 
   if (!token) {
+    console.log("*** TOKEN NOT FOUND: ", token)
     return NextResponse.redirect(new URL("/signin", request.url));
   }
 
   try {
-    // Verify JWT token
-    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const { payload }: { payload: JWTPayload } = await jwtVerify(token, secret, {
+      issuer: JWT_ISSUER,
+      audience: JWT_AUDIENCE,
+    });
+
     const userRole = payload.role as string;
 
-    // Check if user has required role
-    if (!requiredRoles.includes(userRole)) {
+    if (!requiredRoles?.includes(userRole)) {
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
 
     return NextResponse.next();
-  } catch (error) {
-    console.error("JWT verification failed:", error);
+  } catch (err) {
+    console.error("JWT verification failed:", err);
     return NextResponse.redirect(new URL("/signin", request.url));
   }
 }

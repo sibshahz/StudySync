@@ -1,0 +1,14 @@
+{
+  "extends": "@repo/typescript-config/base.json",
+   "compilerOptions": {
+    "rootDir": ".",
+    "module": "ESNext",
+    "target": "ESNext",
+    "moduleResolution": "Bundler",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "outDir": "dist"
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "tsup.config.ts","prisma/**/*", "src/**/*"],
+  "exclude": ["node_modules"]
+}
