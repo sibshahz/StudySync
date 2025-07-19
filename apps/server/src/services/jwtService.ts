@@ -1,6 +1,6 @@
 import jwt, { JwtPayload, SignOptions, Secret } from "jsonwebtoken";
 import crypto from "crypto";
-import "dotenv/config"
+import "dotenv/config";
 if (!process.env.JWT_SECRET) throw new Error("Missing JWT_SECRET in env");
 
 const accessTokenSecret: Secret = process.env.JWT_SECRET;
@@ -20,6 +20,8 @@ export interface JwtUserPayload {
   email: string;
   role?: string;
   name?: string;
+  organizationId?: number;
+  organizationName?: string;
 }
 
 export const generateAccessToken = (payload: JwtUserPayload): string => {

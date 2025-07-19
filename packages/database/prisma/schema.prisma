@@ -59,14 +59,35 @@ model OrganizationMembership {
 }
 
 model Organization {
-  id           Int                     @id @default(autoincrement())
-  name         String                  @unique
-  createdAt    DateTime                @default(now())
-  updatedAt    DateTime                @updatedAt
+  id            Int                      @id @default(autoincrement())
+  name          String                   @unique
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+  departments   Departments[]
+  joinCodes     JoinCode[]
+  memberships   OrganizationMembership[]
 
-  departments  Departments[]
-  joinCodes    JoinCode[]
-  memberships  OrganizationMembership[]
+  // New field for admin
+  adminId       Int                      @unique
+  admin         User                     @relation("OrganizationAdmin", fields: [adminId], references: [id])
+}
+
+model User {
+  id              Int                      @id @default(autoincrement())
+  email           String                   @unique
+  password        String
+  name            String?
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+  refreshTokens   RefreshToken[]
+  status          UserStatus               @default(PENDING)
+  roles           Role[]                   @default([USER])
+  memberships     OrganizationMembership[]
+  student         Student?
+  teacher         Teacher?
+
+  // New field for default organization created by this user
+  defaultOrg      Organization?            @relation("OrganizationAdmin")
 }
 
 model JoinCode {
@@ -83,22 +104,7 @@ model JoinCode {
   organization   Organization @relation(fields: [organizationId], references: [id])
 }
 
-model User {
-  id             Int                     @id @default(autoincrement())
-  email          String                  @unique
-  password       String
-  name           String?
-  createdAt      DateTime                @default(now())
-  updatedAt      DateTime                @updatedAt
-  refreshTokens  RefreshToken[]
-  status         UserStatus              @default(PENDING)
-  roles          Role[]                  @default([USER])
 
-
-  memberships    OrganizationMembership[]
-  student        Student?
-  teacher        Teacher?
-}
 
 model RefreshToken {
   id        Int      @id @default(autoincrement())

@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import * as jwtService from "./jwtService";
-import { prisma } from "@repo/database";
+import { JoinCode, prisma } from "@repo/database";
 import { Role } from "@repo/database";
 import { JwtPayload } from "jsonwebtoken";
 
@@ -18,17 +18,17 @@ interface LoginData {
 
 export const register = async (data: RegisterData) => {
   const { email, password, name, referralCode } = data;
-
+  if (!referralCode) {
+    throw new Error("Referral code is required for registration");
+  }
   const existingUser = await prisma.user.findUnique({
     where: { email },
   });
 
   if (existingUser) throw new Error("User already exists with this email");
 
-  if (referralCode) {
-    const isValidReferral = await validateReferralCode(referralCode);
-    if (!isValidReferral) throw new Error("Invalid referral code");
-  }
+  const isValidReferral = await validateReferralCode(referralCode);
+  if (!isValidReferral) throw new Error("Invalid referral code");
 
   const hashedPassword = await bcrypt.hash(password, 12);
 
@@ -37,14 +37,40 @@ export const register = async (data: RegisterData) => {
       email,
       password: hashedPassword,
       name,
-      roles: [Role.ADMIN],
+      defaultOrg: {
+        connect: { id: isValidReferral.organizationId },
+      },
+      roles: [isValidReferral?.role || Role.USER],
     },
+  });
+
+  const updatedJoinCode = await prisma.joinCode.update({
+    where: { id: isValidReferral.id },
+    data: {
+      usedCount: { increment: 1 },
+      updatedAt: new Date(),
+    },
+  });
+
+  const organizationMembership = await prisma.organizationMembership.create({
+    data: {
+      userId: createdUser.id,
+      organizationId: isValidReferral.organizationId,
+      role: isValidReferral.role,
+    },
+  });
+
+  const organization = await prisma.organization.findUnique({
+    where: { id: isValidReferral.organizationId },
+    select: { name: true },
   });
 
   const tokens = jwtService.generateTokenPair({
     id: createdUser.id.toString(),
     email: createdUser.email,
-    role: Role.ADMIN,
+    role: createdUser.roles[0],
+    organizationId: isValidReferral.organizationId,
+    organizationName: organization?.name,
     name: createdUser.name ?? undefined,
   });
 
@@ -245,7 +271,31 @@ export const getAllUsers = async () => {
   });
 };
 
-export const validateReferralCode = async (code: string): Promise<boolean> => {
-  const validCodes = ["WELCOME2024", "FRIEND50", "SPECIAL100"];
-  return validCodes.includes(code);
+export const validateReferralCode = async (
+  code: string
+): Promise<JoinCode | null> => {
+  const validCode = await prisma.joinCode.findUnique({
+    where: { code },
+    select: {
+      id: true,
+      organizationId: true,
+      role: true,
+      usageLimit: true,
+      usedCount: true,
+      expiresAt: true,
+      createdAt: true,
+      updatedAt: true,
+      code: true,
+    },
+  });
+  if (!validCode) {
+    throw new Error("Invalid referral code");
+  }
+  if (
+    validCode.usageLimit !== null &&
+    validCode.usedCount >= validCode.usageLimit
+  ) {
+    throw new Error("Referral code usage limit exceeded");
+  }
+  return validCode;
 };

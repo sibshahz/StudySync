@@ -64,177 +64,182 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "/admin/dashboard",
+      url: "/dashboard",
       icon: LayoutDashboard,
       isActive: true,
       items: [
         {
           title: "Overview",
-          url: "/admin/dashboard",
+          url: "/dashboard",
         },
         {
           title: "Activity Logs",
-          url: "/admin/activity-logs",
+          url: "/dashboard/activity-logs",
         },
         {
           title: "Notifications",
-          url: "/admin/notifications",
+          url: "/dashboard/notifications",
         },
       ],
     },
+
     {
-      title: "Students",
-      url: "/admin/students",
-      icon: Users2,
+      title: "Organization",
+      url: "/dashboard/organization",
+      icon: Building2,
       items: [
         {
-          title: "All Students",
-          url: "/admin/students",
+          title: "Overview",
+          url: "/dashboard/organizations",
         },
         {
-          title: "Admissions",
-          url: "/admin/students/admissions",
+          title: "Departments",
+          url: "/dashboard/organizations/departments",
         },
         {
-          title: "Enrollment Status",
-          url: "/admin/students/enrollment",
+          title: "Roles & Permissions",
+          url: "/dashboard/organizations/roles",
+        },
+        {
+          title: "Members",
+          url: "/dashboard/organizations/members",
         },
       ],
     },
     {
       title: "Teachers",
-      url: "/admin/teachers",
+      url: "/dashboard/teachers",
       icon: UserCog,
       items: [
         {
           title: "All Teachers",
-          url: "/admin/teachers",
+          url: "/dashboard/teachers",
         },
         {
           title: "Assign Courses",
-          url: "/admin/teachers/assignments",
+          url: "/dashboard/teachers/assignments",
         },
         {
           title: "Attendance",
-          url: "/admin/teachers/attendance",
+          url: "/dashboard/teachers/attendance",
+        },
+      ],
+    },
+    {
+      title: "Students",
+      url: "/dashboard/students",
+      icon: Users2,
+      items: [
+        {
+          title: "All Students",
+          url: "/dashboard/students",
+        },
+        {
+          title: "Admissions",
+          url: "/dashboard/students/admissions",
+        },
+        {
+          title: "Enrollment Status",
+          url: "/dashboard/students/enrollment",
         },
       ],
     },
     {
       title: "Semesters",
-      url: "/admin/semesters",
+      url: "/dashboard/semesters",
       icon: CalendarDays,
       items: [
         {
           title: "All Semesters",
-          url: "/admin/semesters",
+          url: "/dashboard/semesters",
         },
         {
           title: "Create Semester",
-          url: "/admin/semesters/create",
+          url: "/dashboard/semesters/create",
         },
         {
           title: "Semester Calendar",
-          url: "/admin/semesters/calendar",
+          url: "/dashboard/semesters/calendar",
         },
       ],
     },
     {
       title: "Courses & Assignments",
-      url: "/admin/courses",
+      url: "/dashboard/courses",
       icon: BookOpen,
       items: [
         {
           title: "Courses",
-          url: "/admin/courses",
+          url: "/dashboard/courses",
         },
         {
           title: "Assignments",
-          url: "/admin/assignments",
+          url: "/dashboard/assignments",
         },
         {
           title: "Quizzes",
-          url: "/admin/quizzes",
+          url: "/dashboard/quizzes",
         },
       ],
     },
     {
       title: "FYP Management",
-      url: "/admin/fyp",
+      url: "/dashboard/fyp",
       icon: FlaskConical,
       items: [
         {
           title: "Projects",
-          url: "/admin/fyp/projects",
+          url: "/dashboard/fyp/projects",
         },
         {
           title: "Supervisors",
-          url: "/admin/fyp/supervisors",
+          url: "/dashboard/fyp/supervisors",
         },
         {
           title: "Evaluations",
-          url: "/admin/fyp/evaluations",
+          url: "/dashboard/fyp/evaluations",
         },
       ],
     },
     {
       title: "Grading & Results",
-      url: "/admin/grading",
+      url: "/dashboard/grading",
       icon: ClipboardCheck,
       items: [
         {
           title: "Grading Schemes",
-          url: "/admin/grading/schemes",
+          url: "/dashboard/grading/schemes",
         },
         {
           title: "Results",
-          url: "/admin/grading/results",
+          url: "/dashboard/grading/results",
         },
         {
           title: "Reports",
-          url: "/admin/grading/reports",
-        },
-      ],
-    },
-    {
-      title: "Organization",
-      url: "/admin/organization",
-      icon: Building2,
-      items: [
-        {
-          title: "Departments",
-          url: "/admin/organization/departments",
-        },
-        {
-          title: "Roles & Permissions",
-          url: "/admin/organization/roles",
-        },
-        {
-          title: "Members",
-          url: "/admin/organization/members",
+          url: "/dashboard/grading/reports",
         },
       ],
     },
     {
       title: "Settings",
-      url: "/admin/settings",
+      url: "/dashboard/settings",
       icon: Settings2,
       items: [
         {
           title: "General",
-          url: "/admin/settings/general",
+          url: "/dashboard/settings/general",
         },
         {
           title: "Team",
-          url: "/admin/settings/team",
+          url: "/dashboard/settings/team",
         },
         {
           title: "Billing",
-          url: "/admin/settings/billing",
+          url: "/dashboard/settings/billing",
         },
         {
           title: "Access Control",
-          url: "/admin/settings/access",
+          url: "/dashboard/settings/access",
         },
       ],
     },
