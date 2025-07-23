@@ -66,7 +66,7 @@ const data = {
       title: "Dashboard",
       url: "/dashboard",
       icon: LayoutDashboard,
-      isActive: true,
+      // isActive: true,
       items: [
         {
           title: "Overview",

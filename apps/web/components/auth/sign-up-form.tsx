@@ -41,10 +41,10 @@ export default function SignUpForm() {
       return;
     }
 
-    if (formData.hasReferral && !formData.referralCode) {
-      setError("Referral code is required");
-      return;
-    }
+    // if (formData.hasReferral && !formData.referralCode) {
+    //   setError("Referral code is required");
+    //   return;
+    // }
 
     try {
       await signup({

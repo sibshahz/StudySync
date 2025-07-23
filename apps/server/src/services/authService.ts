@@ -3,6 +3,8 @@ import * as jwtService from "./jwtService";
 import { JoinCode, prisma } from "@repo/database";
 import { Role } from "@repo/database";
 import { JwtPayload } from "jsonwebtoken";
+import { ref } from "process";
+import { UserStatus } from "@repo/database/enums";
 
 interface RegisterData {
   email: string;
@@ -16,16 +18,180 @@ interface LoginData {
   password: string;
 }
 
+const registerAdmin = async (data: RegisterData) => {
+  // if user exists as an admin return error
+  const existingUser = await prisma.user.findUnique({
+    where: { email: data.email },
+    select: { id: true, defaultOrg: true, roles: true },
+  });
+  if (existingUser && existingUser.defaultOrg) {
+    throw new Error("User cannot be registered as an admin, already exists");
+  }
+
+  if (existingUser && existingUser.defaultOrg !== null) {
+    // create default organization for the user
+    const organization = await prisma.organization.create({
+      data: {
+        name: `${data.name}'s Organization`,
+        adminId: existingUser.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
+
+    const organizationMembership = await prisma.organizationMembership.create({
+      data: {
+        userId: existingUser.id,
+        organizationId: organization.id,
+        role: Role.ADMIN,
+      },
+    });
+
+    const updatedUser = await prisma.user.update({
+      where: { id: existingUser.id },
+      data: {
+        defaultOrg: {
+          connect: { id: organization.id },
+        },
+        roles: [...(existingUser.roles || []), Role.ADMIN],
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        roles: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        defaultOrg: true,
+      },
+    });
+    const tokens = jwtService.generateTokenPair({
+      id: updatedUser.id.toString(),
+      email: updatedUser.email,
+      role: updatedUser.roles[0],
+      organizationId: organization.id,
+      organizationName: organization?.name,
+      name: updatedUser.name ?? undefined,
+    });
+
+    const decoded = jwtService.verifyRefreshToken(tokens.refreshToken);
+    const expiresAt = new Date(decoded.exp! * 1000);
+
+    await prisma.refreshToken.create({
+      data: {
+        token: tokens.refreshToken,
+        userId: updatedUser.id,
+        expiresAt,
+      },
+    });
+
+    const { ...userResponse } = updatedUser;
+    return { user: userResponse, ...tokens };
+  } else if (!existingUser) {
+    // create new user with default organization
+    const hashedPassword = await bcrypt.hash(data.password, 12);
+    const createdUser = await prisma.user.create({
+      data: {
+        email: data.email,
+        password: hashedPassword,
+        name: data.name,
+        status: UserStatus.ACTIVE,
+        roles: [Role.ADMIN],
+        // defaultOrg: {
+        //   create: {
+        //     name: `${data.name}'s Organization`,
+        //   },
+        // },
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        roles: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        defaultOrg: true,
+      },
+    });
+    const organization = await prisma.organization.create({
+      data: {
+        name: `${data.name}'s Organization`,
+        adminId: createdUser.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
+
+    const organizationMembership = await prisma.organizationMembership.create({
+      data: {
+        userId: createdUser.id,
+        organizationId: organization.id,
+        role: Role.ADMIN,
+      },
+    });
+    const tokens = jwtService.generateTokenPair({
+      id: createdUser.id.toString(),
+      email: createdUser.email,
+      role: createdUser.roles[0],
+      organizationId: organization.id,
+      organizationName: organization?.name,
+      name: createdUser.name ?? undefined,
+    });
+
+    const decoded = jwtService.verifyRefreshToken(tokens.refreshToken);
+    const expiresAt = new Date(decoded.exp! * 1000);
+
+    await prisma.refreshToken.create({
+      data: {
+        token: tokens.refreshToken,
+        userId: createdUser.id,
+        expiresAt,
+      },
+    });
+
+    const { ...userResponse } = createdUser;
+    return { user: userResponse, ...tokens };
+  }
+};
+
 export const register = async (data: RegisterData) => {
   const { email, password, name, referralCode } = data;
+
   if (!referralCode) {
-    throw new Error("Referral code is required for registration");
+    // Register as admin if no referral code is provided
+    const result = await registerAdmin(data);
+    return result;
   }
+
+  /**
+   * If there is a referral code, validate it and register the user
+   * check if user already exists with the email
+   * if user exists, check if they are already registered with the referral code
+   * if they are not registered with the said organization register them
+   *
+   * if they are registered with the organization, throw an error
+   *
+   * if they do not exist already create new user with the referral code
+   *
+   *
+   */
+
   const existingUser = await prisma.user.findUnique({
     where: { email },
   });
 
-  if (existingUser) throw new Error("User already exists with this email");
+  const existingMembership = await prisma.organizationMembership.findFirst({
+    where: {
+      user: { email },
+      organization: { joinCodes: { some: { code: referralCode } } },
+    },
+  });
+
+  if (existingUser && existingMembership) {
+    throw new Error("User already registered with this referral code");
+  }
 
   const isValidReferral = await validateReferralCode(referralCode);
   if (!isValidReferral) throw new Error("Invalid referral code");
@@ -37,6 +203,7 @@ export const register = async (data: RegisterData) => {
       email,
       password: hashedPassword,
       name,
+      status: UserStatus.ACTIVE,
       defaultOrg: {
         connect: { id: isValidReferral.organizationId },
       },

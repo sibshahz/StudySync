@@ -102,6 +102,7 @@ export const authAPI = {
     }
 
     const data = await response.json();
+    console.log("*** SIGNUP RESPONSE IS: ", data);
     return data.data;
   },
 

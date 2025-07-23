@@ -40,6 +40,8 @@ export const generateRefreshToken = (
   });
 };
 
+export const generateOrganizationsToken = (): string => {};
+
 export const generateTokenPair = (
   user: JwtUserPayload
 ): { token: string; refreshToken: string } => {
