@@ -40,6 +40,7 @@ import { useToast } from "@/hooks/use-toast";
 import { MoreHorizontal, Edit, Trash2, Loader2 } from "lucide-react";
 import type { Organization } from "@/types/types";
 import { EditOrganization } from "./edit-organization";
+import { getAllOrganizations } from "@/lib/api/organization";
 
 interface ListOrganizationsProps {
   refreshTrigger?: number;
@@ -81,14 +82,16 @@ export function ListOrganizations({ refreshTrigger }: ListOrganizationsProps) {
     setIsLoading(true);
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // await new Promise((resolve) => setTimeout(resolve, 1000));
 
+      const response = await getAllOrganizations();
+      console.log("***Fetched organizations:", response.data);
       // Here you would make the actual API call
-      setOrganizations(mockOrganizations);
+      setOrganizations(response.data);
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to fetch organizations.",
+        description: "Failed to fetch organizations?.",
         variant: "destructive",
       });
     } finally {
@@ -129,13 +132,15 @@ export function ListOrganizations({ refreshTrigger }: ListOrganizationsProps) {
     fetchOrganizations();
   }, [refreshTrigger]);
 
-  const formatDate = (date: Date) => {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString); // convert string to Date
     return new Intl.DateTimeFormat("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
+      hour12: true, // optional: display 12-hour format with AM/PM
     }).format(date);
   };
 
@@ -161,13 +166,13 @@ export function ListOrganizations({ refreshTrigger }: ListOrganizationsProps) {
         <CardHeader>
           <CardTitle>Organizations</CardTitle>
           <CardDescription>
-            Manage your organizations. You have {organizations.length}{" "}
+            Manage your organizations. You have {organizations?.length}{" "}
             organization
-            {organizations.length !== 1 ? "s" : ""}.
+            {organizations?.length !== 1 ? "s" : ""}.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {organizations.length === 0 ? (
+          {organizations?.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">No organizations found.</p>
               <p className="text-sm text-muted-foreground mt-1">
@@ -187,7 +192,7 @@ export function ListOrganizations({ refreshTrigger }: ListOrganizationsProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {organizations.map((organization) => (
+                  {organizations?.map((organization) => (
                     <TableRow key={organization.id}>
                       <TableCell className="font-medium">
                         {organization.name}

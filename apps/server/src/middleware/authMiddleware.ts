@@ -32,13 +32,14 @@ export const authenticate = async (
 
     const decoded = jwtService.verifyAccessToken(token); // You might want to wrap in try-catch
     const user = await authService.getProfile(decoded.id);
-    console.log("*** DECODED USER: ", user)
+    console.log("*** DECODED USER: ", user);
 
     if (!user) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: "User not found in authenticate method",
       });
+      return;
     }
 
     req.user = user;
@@ -49,6 +50,7 @@ export const authenticate = async (
       success: false,
       message: "Invalid or expired token",
     });
+    return;
   }
 };
 
@@ -66,10 +68,13 @@ export const authorize = (roles: string[] | string) => {
       return;
     }
 
-    const userRoles = Array.isArray(req.user.role) ? req.user.role : [req.user.role];
+    const userRoles =
+      Array.isArray(req.user.role) ? req.user.role : [req.user.role];
     const requiredRoles = Array.isArray(roles) ? roles : [roles];
 
-    const hasPermission = requiredRoles.some(role => userRoles.includes(role));
+    const hasPermission = requiredRoles.some((role) =>
+      userRoles.includes(role)
+    );
 
     if (!hasPermission) {
       res.status(403).json({

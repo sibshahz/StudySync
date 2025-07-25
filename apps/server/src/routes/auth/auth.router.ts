@@ -14,8 +14,9 @@ authRouter.post(
   authController.refreshToken
 );
 
-// Authenticated routes
-authRouter.use(authenticate); // ✅ Fix is here
+authRouter.use((req, res, next) => {
+  Promise.resolve(authenticate(req, res, next)).catch(next);
+});
 
 authRouter.post("/logout", authController.logout);
 authRouter.post("/logout-all", authController.logoutAll);

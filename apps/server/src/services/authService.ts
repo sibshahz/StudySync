@@ -354,6 +354,7 @@ export const logoutAll = async (userId: string) => {
 };
 
 export const getProfile = async (userId: string) => {
+  console.log("***Fetching profile for userId:", userId);
   const user = await prisma.user.findUnique({
     where: { id: parseInt(userId) },
     select: {
@@ -367,7 +368,7 @@ export const getProfile = async (userId: string) => {
     },
   });
 
-  if (!user) throw new Error("User not found");
+  if (!user) throw new Error("User not found: " + JSON.stringify(user));
   return user;
 };
 

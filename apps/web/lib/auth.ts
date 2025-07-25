@@ -132,11 +132,14 @@ export const authAPI = {
       },
       credentials: "include",
     });
-
+    console.log("***Fetching profile with token:", token);
+    console.log("***Response status:", response.status);
+    console.log("***Response is: ", response);
     if (!response.ok) {
-      throw new Error("Failed to get profile");
+      throw new Error("***Failed to get profile: " + JSON.stringify(response));
     }
     const data = await response.json();
+    console.log("***Profile data:", data);
     return data.data;
   },
 

@@ -25,10 +25,10 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   try {
     const result = await authService.login(req.body);
-res.setHeader('Set-Cookie', [
-  `token=${result.token}; HttpOnly; Path=/; Secure; Max-Age=900`,
-  `refreshToken=${result.refreshToken}; HttpOnly; Path=/; Secure; Max-Age=604800`,
-]);
+    res.setHeader("Set-Cookie", [
+      `token=${result.token}; HttpOnly; Path=/; Secure; Max-Age=900`,
+      `refreshToken=${result.refreshToken}; HttpOnly; Path=/; Secure; Max-Age=604800`,
+    ]);
 
     res.status(200).json({
       success: true,
@@ -129,7 +129,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
         : undefined,
     };
 
-    const users = await authService.getAllUsers(filters);
+    const users = await authService.getAllUsers();
     res.status(200).json({
       success: true,
       data: users,
