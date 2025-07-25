@@ -189,6 +189,50 @@ export const register = async (data: RegisterData) => {
     },
   });
 
+  if (existingUser && !existingMembership) {
+    //do not create a new user if they are already registered with the referral code
+    // but add them to the organization as a member
+    const isValidReferral = await validateReferralCode(referralCode);
+    if (!isValidReferral) throw new Error("Invalid referral code");
+    const organizationMembership = await prisma.organizationMembership.create({
+      data: {
+        userId: existingUser.id,
+        organizationId: isValidReferral.organizationId,
+        role: isValidReferral.role,
+      },
+    });
+    const organization = await prisma.organization.findUnique({
+      where: { id: isValidReferral.organizationId },
+      select: { name: true },
+    });
+    const updatedJoinCode = await prisma.joinCode.update({
+      where: { id: isValidReferral.id },
+      data: {
+        usedCount: { increment: 1 },
+        updatedAt: new Date(),
+      },
+    });
+    const tokens = jwtService.generateTokenPair({
+      id: existingUser.id.toString(),
+      email: existingUser.email,
+      role: isValidReferral.role,
+      organizationId: isValidReferral.organizationId,
+      organizationName: organization?.name,
+      name: existingUser.name ?? undefined,
+    });
+    const decoded = jwtService.verifyRefreshToken(tokens.refreshToken);
+    const expiresAt = new Date(decoded.exp! * 1000);
+    await prisma.refreshToken.create({
+      data: {
+        token: tokens.refreshToken,
+        userId: existingUser.id,
+        expiresAt,
+      },
+    });
+    const { password: _, ...userResponse } = existingUser;
+    return { user: userResponse, ...tokens };
+  }
+
   if (existingUser && existingMembership) {
     throw new Error("User already registered with this referral code");
   }

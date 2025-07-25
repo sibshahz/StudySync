@@ -18,6 +18,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Organization } from "@repo/database/enums";
+import { getAllOrganizations } from "@/lib/api/organization";
 
 export function TeamSwitcher({
   teams,
@@ -30,6 +32,23 @@ export function TeamSwitcher({
 }) {
   const { isMobile } = useSidebar();
   const [activeTeam, setActiveTeam] = React.useState(teams[0]);
+  const [orgs, setOrgs] = React.useState<Organization[]>([]);
+
+  React.useEffect(() => {
+    async function fetchOrgs() {
+      // Simulate fetching organizations from an API or context
+      const fetchedOrganizations = await getAllOrganizations();
+      console.log(
+        "***Fetched Organizations from teams swithcher:",
+        fetchedOrganizations.data,
+      );
+      setOrgs(fetchedOrganizations.data);
+    }
+
+    // Fetch organizations from the server or context
+    // setOrgs(fetchedOrganizations);
+    fetchOrgs();
+  }, []);
 
   if (!activeTeam) {
     return null;

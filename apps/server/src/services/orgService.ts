@@ -1,9 +1,20 @@
 import { prisma } from "@repo/database";
 
-export const getAllOrganizations = async () => {
+/**
+ * Get organizations for a user
+ * @param userId - The ID of the user
+ * @returns A list of organizations the user belongs to with role attached
+ */
+export const getUserOrganizations = async (userId: string) => {
   try {
-    const organizations = await prisma.organization.findMany();
-    return organizations;
+    const memberShips = await prisma.organizationMembership.findMany({
+      where: { userId: Number(userId) },
+      include: { organization: true },
+    });
+    return memberShips.map((membership) => ({
+      ...membership.organization,
+      role: membership.role,
+    }));
   } catch (error) {
     console.error("Failed to fetch organizations:", error);
     throw error;

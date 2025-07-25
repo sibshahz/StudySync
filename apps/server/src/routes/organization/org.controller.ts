@@ -1,9 +1,14 @@
 import { Request, Response } from "express";
 import * as orgService from "@/services/orgService";
 
-export const getAllOrganizations = async (req: Request, res: Response) => {
+export const getUserAllOrganizations = async (req: Request, res: Response) => {
   try {
-    const organizations = await orgService.getAllOrganizations();
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ success: false, message: "Unauthorized" });
+      return;
+    }
+    const organizations = await orgService.getUserOrganizations(userId);
     res.status(200).json({
       success: true,
       data: organizations,

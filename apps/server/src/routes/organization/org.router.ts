@@ -18,7 +18,7 @@ orgRouter.use((req, res, next) => {
 
 // orgRouter.put("/:orgId", validate("updateOrganization"), orgController.updateOrganization);
 // orgRouter.delete("/:orgId", validate("deleteOrganization"), orgController.deleteOrganization);
-orgRouter.get("/", orgController.getAllOrganizations);
+orgRouter.get("/", orgController.getUserAllOrganizations);
 // orgRouter.get(
 //   "/:orgId",
 //   validate("getOrganization"),
