@@ -412,7 +412,7 @@ export const getProfile = async (userId: string) => {
     },
   });
 
-  if (!user) throw new Error("User not found: " + JSON.stringify(user));
+  if (!user) throw new Error("***User not found: " + JSON.stringify(user));
   return user;
 };
 

@@ -20,7 +20,7 @@ export default function OrganizationsPage() {
             Manage organizations in your StudySync system.
           </p>
         </div>
-        <CreateOrganization onOrganizationCreated={handleOrganizationCreated} />
+        {/* <CreateOrganization onOrganizationCreated={handleOrganizationCreated} /> */}
       </div>
 
       <ListOrganizations refreshTrigger={refreshTrigger} />

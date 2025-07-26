@@ -13,7 +13,7 @@ export type SemesterSeason = PrismaClient.SemesterSeason;
 export const QuestionType = PrismaClient.QuestionType;
 export type QuestionType = PrismaClient.QuestionType;
 
-export type OrganizationMember = PrismaClient.OrganizationMembership;
+export type OrganizationMembership = PrismaClient.OrganizationMembership;
 
 export type Organization = PrismaClient.Organization;
 

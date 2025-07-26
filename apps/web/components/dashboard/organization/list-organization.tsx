@@ -41,14 +41,21 @@ import { MoreHorizontal, Edit, Trash2, Loader2 } from "lucide-react";
 import type { Organization } from "@/types/types";
 import { EditOrganization } from "./edit-organization";
 import { getAllOrganizations } from "@/lib/api/organization";
+import { AppDispatch, RootState } from "@/lib/store/store";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchOrganizations } from "@/lib/store/common/orgsSlice";
 
 interface ListOrganizationsProps {
   refreshTrigger?: number;
 }
 
 export function ListOrganizations({ refreshTrigger }: ListOrganizationsProps) {
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  // const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const { userOrganizations, status } = useSelector(
+    (state: RootState) => state.organizations,
+  );
   const [isLoading, setIsLoading] = useState(true);
+  const dispatch = useDispatch<AppDispatch>();
   const [editingOrganization, setEditingOrganization] =
     useState<Organization | null>(null);
   const [deletingOrganization, setDeletingOrganization] =
@@ -78,16 +85,16 @@ export function ListOrganizations({ refreshTrigger }: ListOrganizationsProps) {
     },
   ];
 
-  const fetchOrganizations = async () => {
+  const fetchOrganizationsOld = async () => {
     setIsLoading(true);
     try {
       // Simulate API call
       // await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const response = await getAllOrganizations();
-      console.log("***Fetched organizations:", response.data);
+      console.log("***Fetched organizations:", response);
       // Here you would make the actual API call
-      setOrganizations(response.data);
+      setOrganizations(response);
     } catch (error) {
       toast({
         title: "Error",
@@ -129,8 +136,26 @@ export function ListOrganizations({ refreshTrigger }: ListOrganizationsProps) {
   };
 
   useEffect(() => {
-    fetchOrganizations();
+    dispatch(fetchOrganizations());
+    if (status === "succeeded") {
+      setIsLoading(false);
+    }
   }, [refreshTrigger]);
+
+  useEffect(() => {
+    if (status === "loading") {
+      setIsLoading(true);
+    } else if (status === "succeeded") {
+      setIsLoading(false);
+    } else if (status === "failed") {
+      setIsLoading(false);
+      toast({
+        title: "Error",
+        description: "Failed to fetch organizations.",
+        variant: "destructive",
+      });
+    }
+  }, [status, toast]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString); // convert string to Date
@@ -166,13 +191,13 @@ export function ListOrganizations({ refreshTrigger }: ListOrganizationsProps) {
         <CardHeader>
           <CardTitle>Organizations</CardTitle>
           <CardDescription>
-            Manage your organizations. You have {organizations?.length}{" "}
+            Manage your organizations. You have {userOrganizations?.length}{" "}
             organization
-            {organizations?.length !== 1 ? "s" : ""}.
+            {userOrganizations?.length !== 1 ? "s" : ""}.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {organizations?.length === 0 ? (
+          {userOrganizations?.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">No organizations found.</p>
               <p className="text-sm text-muted-foreground mt-1">
@@ -192,7 +217,7 @@ export function ListOrganizations({ refreshTrigger }: ListOrganizationsProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {organizations?.map((organization) => (
+                  {userOrganizations?.map((organization) => (
                     <TableRow key={organization.id}>
                       <TableCell className="font-medium">
                         {organization.name}
@@ -253,7 +278,7 @@ export function ListOrganizations({ refreshTrigger }: ListOrganizationsProps) {
           open={!!editingOrganization}
           onOpenChange={(open) => !open && setEditingOrganization(null)}
           onOrganizationUpdated={() => {
-            fetchOrganizations();
+            dispatch(fetchOrganizations());
             setEditingOrganization(null);
           }}
         />

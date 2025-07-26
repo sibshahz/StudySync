@@ -1,8 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
-
+import organizationSlice from "./common/orgsSlice";
 export const makeStore = () => {
   return configureStore({
-    reducer: {},
+    reducer: {
+      organizations: organizationSlice,
+    },
   });
 };
 
