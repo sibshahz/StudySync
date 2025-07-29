@@ -21,11 +21,13 @@ export interface OrganizationState {
     updatedAt: Date;
   };
   status: "idle" | "loading" | "succeeded" | "failed";
+  selectedOrganization?: UserOrganization;
 }
 
 const initialState: OrganizationState = {
   userDefaultOrganization: undefined,
   userOrganizations: [],
+  selectedOrganization: undefined,
   status: "idle",
 };
 
@@ -53,6 +55,12 @@ const organizationsSlice = createSlice({
       state.userOrganizations = action.payload;
       state.status = "succeeded";
     },
+    setSelectedOrganization: (
+      state,
+      action: PayloadAction<UserOrganization | undefined>,
+    ) => {
+      state.selectedOrganization = action.payload;
+    },
     // Additional reducers can be added here if needed
   },
   extraReducers: (builder) => {
@@ -65,6 +73,8 @@ const organizationsSlice = createSlice({
         (state, action: PayloadAction<UserOrganization[]>) => {
           state.status = "succeeded";
           state.userOrganizations = action.payload;
+          state.selectedOrganization =
+            action.payload.length > 0 ? action.payload[0] : undefined;
         },
       )
       .addCase(fetchOrganizations.rejected, (state) => {
@@ -74,6 +84,9 @@ const organizationsSlice = createSlice({
 });
 
 export const {
+  resetOrganizations,
+  setUserOrganizations,
+  setSelectedOrganization,
   // setFlowSettings,
   // setThemeStyles,
   // setHeaderPosition,

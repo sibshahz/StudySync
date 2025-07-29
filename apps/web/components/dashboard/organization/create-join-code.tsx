@@ -49,6 +49,9 @@ import {
   getRoleDisplayName,
   generateJoinCode,
 } from "@/types/types";
+import { createJoinCode } from "@/lib/api/joincode";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/store/store";
 
 interface CreateJoinCodeProps {
   onJoinCodeCreated?: () => void;
@@ -57,7 +60,10 @@ interface CreateJoinCodeProps {
 export function CreateJoinCode({ onJoinCodeCreated }: CreateJoinCodeProps) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const organizations = useSelector(
+    (state: RootState) => state.organizations.userOrganizations,
+  );
+  // const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [hasUsageLimit, setHasUsageLimit] = useState(false);
   const [hasExpiration, setHasExpiration] = useState(false);
   const { toast } = useToast();
@@ -73,47 +79,56 @@ export function CreateJoinCode({ onJoinCodeCreated }: CreateJoinCodeProps) {
   });
 
   // Mock organizations data
-  const mockOrganizations: Organization[] = [
-    {
-      id: 1,
-      name: "University of Technology",
-      createdAt: new Date("2024-01-15"),
-      updatedAt: new Date("2024-01-15"),
-    },
-    {
-      id: 2,
-      name: "State College of Engineering",
-      createdAt: new Date("2024-01-20"),
-      updatedAt: new Date("2024-02-01"),
-    },
-    {
-      id: 3,
-      name: "Metropolitan University",
-      createdAt: new Date("2024-02-05"),
-      updatedAt: new Date("2024-02-05"),
-    },
-  ];
+  // const mockOrganizations: Organization[] = [
+  //   {
+  //     id: 1,
+  //     name: "University of Technology",
+  //     createdAt: new Date("2024-01-15"),
+  //     updatedAt: new Date("2024-01-15"),
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "State College of Engineering",
+  //     createdAt: new Date("2024-01-20"),
+  //     updatedAt: new Date("2024-02-01"),
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Metropolitan University",
+  //     createdAt: new Date("2024-02-05"),
+  //     updatedAt: new Date("2024-02-05"),
+  //   },
+  // ];
 
-  useEffect(() => {
-    // Fetch organizations
-    setOrganizations(mockOrganizations);
-  }, []);
+  // useEffect(() => {
+  //   // Fetch organizations
+  //   setOrganizations(mockOrganizations);
+  // }, []);
 
   async function onSubmit(values: CreateJoinCodeInput) {
     setIsLoading(true);
     try {
       // Generate unique code
-      const code = generateJoinCode();
+      // const code = generateJoinCode();
+      const response = await createJoinCode({
+        organizationId: values.organizationId,
+        role: values.role,
+        usageLimit: values.usageLimit ?? null,
+        expiresAt: values.expiresAt ?? null,
+      });
 
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // await new Promise((resolve) => setTimeout(resolve, 1000));  // useEffect(() => {
+      //   // Fetch organizations
+      //   setOrganizations(mockOrganizations);
+      // }, []);
 
       // Here you would make the actual API call
-      console.log("Creating join code:", { ...values, code });
+      // console.log("Creating join code:", { ...values, code });
 
       toast({
         title: "Success",
-        description: `Join code ${code} created successfully.`,
+        description: `Join code ${response.data.code} created successfully.`,
       });
 
       form.reset();

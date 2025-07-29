@@ -23,8 +23,8 @@ export const createJoinCode = async (data: {
     where: { organizationId: Number(data.organizationId), role: data.role },
   });
   const str = "_";
-  const code =
-    data.role + str + data.organizationId + str + existingCodes.length + 1;
+  const codeCount = Number(existingCodes.length + 1);
+  const code = data.role + str + data.organizationId + str + codeCount;
   return prisma.joinCode.create({
     data: {
       organizationId: Number(data.organizationId),
@@ -40,5 +40,21 @@ export const createJoinCode = async (data: {
 export const deleteJoinCode = async (id: string) => {
   return prisma.joinCode.delete({
     where: { id: Number(id) },
+  });
+};
+
+export const updateJoinCode = async (data: {
+  id: number;
+  usageLimit: number;
+  expiresAt: Date;
+}) => {
+  return prisma.joinCode.update({
+    where: {
+      id: Number(data.id),
+    },
+    data: {
+      usageLimit: data.usageLimit,
+      expiresAt: data.expiresAt,
+    },
   });
 };

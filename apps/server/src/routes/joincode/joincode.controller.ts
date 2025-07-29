@@ -42,6 +42,7 @@ export const getOrganizationJoinCodes = async (req: Request, res: Response) => {
 
 export const createJoinCode = async (req: Request, res: Response) => {
   try {
+    console.log("*** Create join code request: ", req.body);
     const { organizationId, usageLimit, expiresAt, role } = req.body;
     const data = req.body;
     if (!organizationId || !role) {
@@ -59,5 +60,55 @@ export const createJoinCode = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const updateJoinCode = async (req: Request, res: Response) => {
+  try {
+    const { id, usageLimit, expiresAt } = req.body;
+    const data = {
+      id: Number(id),
+      usageLimit: Number(usageLimit),
+      expiresAt,
+    };
+    if (!id) {
+      res.status(400).json({
+        success: false,
+        message: "Missing required join code id",
+      });
+      return;
+    }
+    const joinCode = await joinCodeService.updateJoinCode(data);
+    res.status(201).json({
+      success: true,
+      message: "Join code created successfully",
+      data: joinCode,
+    });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const deleteJoinCode = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.joincodeId;
+    if (!id) {
+      res.status(400).json({
+        success: false,
+        message: "Missing required join code id",
+      });
+      return;
+    }
+
+    const joinCode = await joinCodeService.deleteJoinCode(id);
+    res.status(201).json({
+      success: true,
+      message: "Join code deleted successfully",
+      data: joinCode,
+    });
+    return;
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+    return;
   }
 };

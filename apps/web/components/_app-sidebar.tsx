@@ -104,6 +104,10 @@ const data = {
           title: "Members",
           url: "/dashboard/organizations/members",
         },
+        {
+          title: "Access Codes",
+          url: "/dashboard/organizations/joincodes",
+        },
       ],
     },
     {

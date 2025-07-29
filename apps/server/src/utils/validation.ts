@@ -95,6 +95,20 @@ const validationSchemas = {
         "any.required": "Role is required",
       }),
   }),
+  updateJoinCode: Joi.object({
+    usageLimit: Joi.number().min(1).optional().messages({
+      "number.min": "Usage limit must be at least 1",
+      "any.required": "Usage limit is optional",
+    }),
+    expiresAt: Joi.date().greater("now").optional().messages({
+      "date.greater": "Expiration date must be in the future",
+      "any.required": "Expiration date is optional",
+    }),
+    id: Joi.number().min(1).messages({
+      "number.min": "Id must be atleast present",
+      "any.required": "Id is mandatory",
+    }),
+  }),
 };
 
 export { validationSchemas };

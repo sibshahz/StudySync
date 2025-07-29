@@ -8,7 +8,7 @@
     "paths": {
       "@/*": ["./*"]
     },
-    "types": ["node"]
+    "types": ["jest", "node"]
   },
   "exclude": ["node_modules"],
   "include": ["src"]

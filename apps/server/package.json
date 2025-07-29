@@ -9,7 +9,7 @@
     "dev": "ts-node-dev --respawn --transpile-only -r tsconfig-paths/register ./src/index.ts",
     "check-types": "tsc --noEmit",
     "lint": "eslint src/ --max-warnings 0",
-    "test": "jest --detectOpenHandles"
+    "test": "cross-env NODE_ENV=test jest --detectOpenHandles"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",
@@ -18,13 +18,18 @@
     "@types/cookie-parser": "^1.4.9",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
+    "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
-    "@types/multer": "^2.0.0"
+    "@types/multer": "^2.0.0",
+    "@types/xlsx": "^0.0.35",
+    "cross-env": "^10.0.0",
+    "jest": "^30.0.5",
+    "ts-jest": "^29.4.0"
   },
   "dependencies": {
-    "@repo/database": "*",
     "@elevenlabs/elevenlabs-js": "^2.5.0",
+    "@repo/database": "*",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
     "body-parser": "^2.2.0",
@@ -39,6 +44,7 @@
     "multer": "^2.0.1",
     "ts-node-dev": "^2.0.0",
     "tsconfig-paths": "^4.2.0",
-    "tsup": "^8.5.0"
+    "tsup": "^8.5.0",
+    "xlsx": "^0.18.5"
   }
 }

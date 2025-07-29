@@ -21,8 +21,12 @@ joincodeRouter.post(
 
 // joincodeRouter.use(authorize("admin"));
 
-// joincodeRouter.put("/:joincodeId", validate("updatejoincodeanization"), joincodeController.updatejoincodeanization);
-// joincodeRouter.delete("/:joincodeId", validate("deletejoincodeanization"), joincodeController.deletejoincodeanization);
+joincodeRouter.put(
+  "/update",
+  validate("updateJoinCode"),
+  joincodeController.updateJoinCode
+);
+joincodeRouter.delete("/:joincodeId", joincodeController.deleteJoinCode);
 joincodeRouter.get("/orgs/:orgId", joincodeController.getOrganizationJoinCodes);
 
 export default joincodeRouter;
