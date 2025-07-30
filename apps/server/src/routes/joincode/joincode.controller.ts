@@ -23,11 +23,16 @@ export const getJoinCodeById = async (req: Request, res: Response) => {
 };
 
 export const getOrganizationJoinCodes = async (req: Request, res: Response) => {
-  const { orgId } = req.params;
+  const orgId = req.params.orgId || req.query.orgId;
+  if (!orgId) {
+    res.status(400).json({
+      success: false,
+      message: "Missing required organization ID",
+    });
+    return;
+  }
   try {
-    const joinCodes = await joinCodeService.getOrganizationJoinCodes(
-      orgId || ""
-    );
+    const joinCodes = await joinCodeService.getOrganizationJoinCodes(orgId);
     if (!joinCodes) {
       res.status(404).json({ success: false, message: "No join codes found" });
       return;

@@ -177,15 +177,15 @@ const data = {
 };
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  showSwitcher?: boolean;
+  showswitcher?: boolean;
 }
 
-export function LmsAppSidebar({ ...props }: AppSidebarProps) {
+export function LmsAppSidebar({ showswitcher, ...rest }: AppSidebarProps) {
   const { user } = useAuth();
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar collapsible="icon" {...rest}>
       <SidebarHeader>
-        {props.showSwitcher && (
+        {showswitcher && (
           <div className="mb-4">
             <TeamSwitcher teams={data.teams} />
           </div>

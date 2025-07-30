@@ -63,9 +63,6 @@ export function CreateJoinCode({ onJoinCodeCreated }: CreateJoinCodeProps) {
   const organizations = useSelector(
     (state: RootState) => state.organizations.userOrganizations,
   );
-  // const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [hasUsageLimit, setHasUsageLimit] = useState(false);
-  const [hasExpiration, setHasExpiration] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<CreateJoinCodeInput>({
@@ -132,8 +129,6 @@ export function CreateJoinCode({ onJoinCodeCreated }: CreateJoinCodeProps) {
       });
 
       form.reset();
-      setHasUsageLimit(false);
-      setHasExpiration(false);
       setOpen(false);
       onJoinCodeCreated?.();
     } catch (error) {
@@ -227,22 +222,7 @@ export function CreateJoinCode({ onJoinCodeCreated }: CreateJoinCodeProps) {
             />
 
             <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="hasUsageLimit"
-                  checked={hasUsageLimit}
-                  onCheckedChange={setHasUsageLimit}
-                  disabled={isLoading}
-                />
-                <label
-                  htmlFor="hasUsageLimit"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Set usage limit
-                </label>
-              </div>
-
-              {hasUsageLimit && (
+              {
                 <FormField
                   control={form.control}
                   name="usageLimit"
@@ -272,26 +252,11 @@ export function CreateJoinCode({ onJoinCodeCreated }: CreateJoinCodeProps) {
                     </FormItem>
                   )}
                 />
-              )}
+              }
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="hasExpiration"
-                  checked={hasExpiration}
-                  onCheckedChange={setHasExpiration}
-                  disabled={isLoading}
-                />
-                <label
-                  htmlFor="hasExpiration"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Set expiration date
-                </label>
-              </div>
-
-              {hasExpiration && (
+              {
                 <FormField
                   control={form.control}
                   name="expiresAt"
@@ -335,7 +300,7 @@ export function CreateJoinCode({ onJoinCodeCreated }: CreateJoinCodeProps) {
                     </FormItem>
                   )}
                 />
-              )}
+              }
             </div>
 
             <DialogFooter>

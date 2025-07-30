@@ -53,17 +53,23 @@ export const editOrganizationSchema = z.object({
 
 // Zod schemas for JoinCode validation
 export const createJoinCodeSchema = z.object({
-  organizationId: z.number().min(1, "Organization is required"),
+  organizationId: z
+    .number({
+      error: "Select an organization first.",
+    })
+    .min(1, "Organization is required"),
   role: z.nativeEnum(Role).refine((val) => Object.values(Role).includes(val), {
     message: "Please select a valid role",
   }),
   usageLimit: z
-    .number()
+    .number({
+      error: "Usage limit is required.",
+    })
     .min(1, "Usage limit must be at least 1")
-    .max(10000, "Usage limit cannot exceed 10,000")
-    .optional()
-    .nullable(),
-  expiresAt: z.date().optional().nullable(),
+    .max(10000, "Usage limit cannot exceed 10,000"),
+  expiresAt: z.date({
+    error: "Expiration date is required.",
+  }),
 });
 
 export const editJoinCodeSchema = z.object({

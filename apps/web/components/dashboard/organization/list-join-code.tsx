@@ -51,6 +51,10 @@ import { format, isAfter } from "date-fns";
 import type { JoinCode, Role } from "@/types/types";
 import { getRoleDisplayName, getRoleColor } from "@/types/types";
 import { EditJoinCode } from "./edit-join-code";
+import { getOrganizationJoinCodes } from "@/lib/api/joincode";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/store/store";
+import { se } from "date-fns/locale";
 
 interface ListJoinCodesProps {
   refreshTrigger?: number;
@@ -59,6 +63,9 @@ interface ListJoinCodesProps {
 export function ListJoinCodes({ refreshTrigger }: ListJoinCodesProps) {
   const [joinCodes, setJoinCodes] = useState<JoinCode[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const selectedOrganization = useSelector(
+    (state: RootState) => state.organizations.selectedOrganization,
+  );
   const [editingJoinCode, setEditingJoinCode] = useState<JoinCode | null>(null);
   const [deletingJoinCode, setDeletingJoinCode] = useState<JoinCode | null>(
     null,
@@ -120,15 +127,22 @@ export function ListJoinCodes({ refreshTrigger }: ListJoinCodesProps) {
       },
     },
   ];
-
+  useEffect(() => {
+    // Simulate fetching join codes from an API
+    if (selectedOrganization) {
+      fetchJoinCodes();
+    }
+  }, [refreshTrigger, selectedOrganization]);
   const fetchJoinCodes = async () => {
     setIsLoading(true);
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
+      const joinCodesResponse = await getOrganizationJoinCodes(
+        String(selectedOrganization?.id || 0),
+      );
+      console.log("***Fetched join codes:", joinCodesResponse);
       // Here you would make the actual API call
-      setJoinCodes(mockJoinCodes);
+      setJoinCodes(joinCodesResponse);
     } catch (error) {
       toast({
         title: "Error",
@@ -182,10 +196,6 @@ export function ListJoinCodes({ refreshTrigger }: ListJoinCodesProps) {
       });
     }
   };
-
-  useEffect(() => {
-    fetchJoinCodes();
-  }, [refreshTrigger]);
 
   const formatDate = (date: Date) => {
     return format(date, "MMM dd, yyyy");

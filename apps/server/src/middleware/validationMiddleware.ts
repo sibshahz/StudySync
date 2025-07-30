@@ -14,8 +14,8 @@ export const validate = (schemaName: SchemaName) => {
       });
       return;
     }
-    const body = req.body ? req.body.data : null;
-    const { error, value } = schema.validate(body, {
+
+    const { error, value } = schema.validate(req.body, {
       abortEarly: false,
       stripUnknown: true,
     });

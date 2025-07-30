@@ -36,6 +36,9 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/auth-context";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/lib/store/store";
+import { fetchOrganizations } from "@/lib/store/common/orgsSlice";
 
 // This is sample data.
 const data = {
@@ -269,15 +272,19 @@ const data = {
 };
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  showSwitcher?: boolean;
+  showswitcher?: boolean;
 }
 
-export function AppSidebar({ ...props }: AppSidebarProps) {
+export function AppSidebar({ showswitcher, ...rest }: AppSidebarProps) {
   const { user } = useAuth();
+  const dispatch = useDispatch<AppDispatch>();
+  React.useEffect(() => {
+    dispatch(fetchOrganizations());
+  }, []);
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar collapsible="icon" {...rest}>
       <SidebarHeader>
-        {props.showSwitcher && (
+        {showswitcher && (
           <div className="mb-4">
             <TeamSwitcher teams={data.teams} />
           </div>

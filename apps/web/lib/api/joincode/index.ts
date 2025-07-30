@@ -17,12 +17,10 @@ export const createJoinCode = async ({
 }: Omit<JoinCode, "id" | "code" | "createdAt" | "updatedAt" | "usedCount">) => {
   try {
     const response = await axios_default.post("joincode/create", {
-      data: {
-        organizationId: organizationId,
-        role: role,
-        usageLimit: usageLimit,
-        expiresAt: expiresAt,
-      },
+      organizationId: organizationId,
+      role: role,
+      usageLimit: usageLimit,
+      expiresAt: expiresAt,
     });
     console.log("*** Response from create join: ", response);
     return response.data;

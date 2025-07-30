@@ -10,6 +10,14 @@ export const getJoinCodeById = async (id: string) => {
 export const getOrganizationJoinCodes = async (orgId: string) => {
   return prisma.joinCode.findMany({
     where: { organizationId: Number(orgId) },
+    orderBy: { createdAt: "asc" },
+    include: {
+      organization: {
+        select: {
+          name: true,
+        },
+      },
+    },
   });
 };
 
