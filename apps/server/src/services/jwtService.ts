@@ -7,7 +7,7 @@ const accessTokenSecret: Secret = process.env.JWT_SECRET;
 const refreshTokenSecret: Secret =
   process.env.JWT_REFRESH_SECRET ?? "default-refresh-secret";
 
-const accessTokenExpiry: string = process.env.JWT_ACCESS_EXPIRY ?? "15m";
+const accessTokenExpiry: string = process.env.JWT_ACCESS_EXPIRY ?? "7d";
 const refreshTokenExpiry: string = process.env.JWT_REFRESH_EXPIRY ?? "7d";
 
 const defaultJwtOptions: SignOptions = {
