@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from "express";
+import { ZodType } from "zod";
 import { validationSchemas } from "@/utils/validation";
 
 type SchemaName = keyof typeof validationSchemas;
 
 export const validate = (schemaName: SchemaName) => {
   return (req: Request, res: Response, next: NextFunction): void => {
-    const schema = validationSchemas[schemaName];
+    const schema: ZodType<any> | undefined = validationSchemas[schemaName];
 
     if (!schema) {
       res.status(500).json({
@@ -15,18 +16,13 @@ export const validate = (schemaName: SchemaName) => {
       return;
     }
 
-    const { error, value } = schema.validate(req.body, {
-      abortEarly: false,
-      stripUnknown: true,
-    });
+    const result = schema.safeParse(req.body);
 
-    if (error) {
-      const errors = error.details.map(
-        (detail: { path: any[]; message: any }) => ({
-          field: detail.path.join("."),
-          message: detail.message,
-        })
-      );
+    if (!result.success) {
+      const errors = result.error.issues.map((err) => ({
+        field: err.path.join("."),
+        message: err.message,
+      }));
 
       res.status(400).json({
         success: false,
@@ -36,7 +32,7 @@ export const validate = (schemaName: SchemaName) => {
       return;
     }
 
-    req.body = value; // Overwrite with validated data
+    req.body = result.data;
     next();
   };
 };

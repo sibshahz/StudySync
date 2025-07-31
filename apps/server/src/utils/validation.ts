@@ -1,113 +1,77 @@
-import Joi from "joi";
+import { z } from "zod";
 import { UserRole } from "@repo/database/enums";
 
+// Shared enums
+const userRoleEnum = z.nativeEnum(UserRole);
+
+// Now
 const validationSchemas = {
-  // Registration validation
-  register: Joi.object({
-    name: Joi.string().min(2).max(50).required().messages({
-      "string.min": "Name must be at least 2 characters long",
-      "string.max": "Name cannot exceed 50 characters",
-      "any.required": "Name is required",
-    }),
+  register: z.object({
+    name: z
+      .string()
+      .min(2, "Name must be at least 2 characters long")
+      .max(50, "Name cannot exceed 50 characters"),
 
-    email: Joi.string().email().required().messages({
-      "string.email": "Please provide a valid email address",
-      "any.required": "Email is required",
-    }),
+    email: z.string().email("Please provide a valid email address"),
 
-    password: Joi.string()
-      .min(8)
-      // .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])/)
-      .required()
-      .messages({
-        "string.min": "Password must be at least 8 characters long",
-        // "string.pattern.base":
-        //   "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character",
-        "any.required": "Password is required",
-      }),
+    password: z.string().min(8, "Password must be at least 8 characters long"),
 
-    referralCode: Joi.string().optional().allow(""),
+    referralCode: z.string().optional().or(z.literal("")),
   }),
 
-  // Login validation
-  login: Joi.object({
-    email: Joi.string().email().required().messages({
-      "string.email": "Please provide a valid email address",
-      "any.required": "Email is required",
-    }),
+  login: z.object({
+    email: z.string().email("Please provide a valid email address"),
 
-    password: Joi.string().required().messages({
-      "any.required": "Password is required",
-    }),
+    password: z.string().min(1, "Password is required"),
   }),
 
-  // Refresh token validation
-  refreshToken: Joi.object({
-    refreshToken: Joi.string().required().messages({
-      "any.required": "Refresh token is required",
-    }),
+  refreshToken: z.object({
+    refreshToken: z.string().min(1, "Refresh token is required"),
   }),
 
-  // Profile update validation
-  updateProfile: Joi.object({
-    name: Joi.string().min(2).max(50).optional(),
-
-    email: Joi.string().email().optional(),
+  updateProfile: z.object({
+    name: z.string().min(2).max(50).optional(),
+    email: z.string().email().optional(),
   }),
 
-  // Change password validation
-  changePassword: Joi.object({
-    currentPassword: Joi.string().required().messages({
-      "any.required": "Current password is required",
-    }),
+  changePassword: z.object({
+    currentPassword: z.string().min(1, "Current password is required"),
 
-    newPassword: Joi.string()
-      .min(8)
-      .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])/)
-      .required()
-      .messages({
-        "string.min": "New password must be at least 8 characters long",
-        "string.pattern.base":
-          "New password must contain at least one lowercase letter, one uppercase letter, one number, and one special character",
-        "any.required": "New password is required",
-      }),
+    newPassword: z
+      .string()
+      .min(8, "New password must be at least 8 characters long")
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])/,
+        "New password must contain at least one lowercase letter, one uppercase letter, one number, and one special character"
+      ),
   }),
 
-  // Create join code validation
-  createJoinCode: Joi.object({
-    organizationId: Joi.number().min(1).required().messages({
-      "number.min": "Organization ID is not given",
-      "any.required": "Organization ID is required",
-    }),
-    usageLimit: Joi.number().min(1).optional().messages({
-      "number.min": "Usage limit must be at least 1",
-      "any.required": "Usage limit is optional",
-    }),
-    expiresAt: Joi.date().greater("now").optional().messages({
-      "date.greater": "Expiration date must be in the future",
-      "any.required": "Expiration date is optional",
-    }),
-    role: Joi.string()
-      .valid(...Object.values(UserRole))
-      .required()
-      .messages({
-        "any.only": `Role must be one of ${Object.values(UserRole).join(", ")}`,
-        "any.required": "Role is required",
-      }),
+  createJoinCode: z.object({
+    organizationId: z.number().min(1, "Organization ID is not given"),
+
+    usageLimit: z.number().min(1, "Usage limit must be at least 1").optional(),
+
+    expiresAt: z.coerce
+      .date()
+      .refine((date) => date > new Date(), {
+        message: "Expiration date must be in the future",
+      })
+      .optional(),
+
+    role: userRoleEnum,
   }),
-  updateJoinCode: Joi.object({
-    usageLimit: Joi.number().min(1).optional().messages({
-      "number.min": "Usage limit must be at least 1",
-      "any.required": "Usage limit is optional",
-    }),
-    expiresAt: Joi.date().greater("now").optional().messages({
-      "date.greater": "Expiration date must be in the future",
-      "any.required": "Expiration date is optional",
-    }),
-    id: Joi.number().min(1).messages({
-      "number.min": "Id must be atleast present",
-      "any.required": "Id is mandatory",
-    }),
+
+  updateJoinCode: z.object({
+    usageLimit: z.number().min(1, "Usage limit must be at least 1").optional(),
+
+    expiresAt: z.coerce
+      .date()
+      .refine((date) => date > new Date(), {
+        message: "Expiration date must be in the future",
+      })
+      .optional(),
+
+    id: z.number().min(1, "Id must be atleast present"),
   }),
 };
 
