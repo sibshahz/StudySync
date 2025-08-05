@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import * as jwtService from "@/services/jwtService";
 import * as authService from "@/services/authService";
+import { user } from "@elevenlabs/elevenlabs-js/api";
 
 // Extend Express Request type to include `user`
 declare global {
@@ -69,7 +70,7 @@ export const authorize = (roles: string[] | string) => {
     }
 
     const userRoles =
-      Array.isArray(req.user.role) ? req.user.role : [req.user.role];
+      Array.isArray(req.user.roles) ? req.user.roles : [req.user.role];
     const requiredRoles = Array.isArray(roles) ? roles : [roles];
 
     const hasPermission = requiredRoles.some((role) =>
@@ -79,7 +80,11 @@ export const authorize = (roles: string[] | string) => {
     if (!hasPermission) {
       res.status(403).json({
         success: false,
-        message: "Insufficient permissions",
+        message:
+          "Insufficient permissions" +
+          JSON.stringify(req.user) +
+          " AND " +
+          requiredRoles,
       });
       return;
     }

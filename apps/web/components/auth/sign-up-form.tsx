@@ -47,14 +47,17 @@ export default function SignUpForm() {
     // }
 
     try {
-      await signup({
+      const response = await signup({
         name: formData.name,
         email: formData.email,
         password: formData.password,
         referralCode: formData.hasReferral ? formData.referralCode : undefined,
       });
+      console.log("***Signup response:", response);
+
       router.push("/dashboard");
     } catch (err) {
+      // console.log("***Signup error:", err);
       setError(err instanceof Error ? err.message : "Signup failed");
     }
   };

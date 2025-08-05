@@ -17,6 +17,49 @@ export enum Role {
   USER = "USER",
 }
 
+// Status enum
+export enum Status {
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
+  SUSPENDED = "SUSPENDED",
+}
+
+// Department enum
+export enum Department {
+  COMPUTER_SCIENCE = "COMPUTER_SCIENCE",
+  SOFTWARE_ENGINEERING = "SOFTWARE_ENGINEERING",
+  ELECTRICAL_ENGINEERING = "ELECTRICAL_ENGINEERING",
+  MECHANICAL_ENGINEERING = "MECHANICAL_ENGINEERING",
+  CIVIL_ENGINEERING = "CIVIL_ENGINEERING",
+  BUSINESS_ADMINISTRATION = "BUSINESS_ADMINISTRATION",
+}
+
+// Batch/Semester enum
+export enum Batch {
+  SEMESTER_1 = "SEMESTER_1",
+  SEMESTER_2 = "SEMESTER_2",
+  SEMESTER_3 = "SEMESTER_3",
+  SEMESTER_4 = "SEMESTER_4",
+  SEMESTER_5 = "SEMESTER_5",
+  SEMESTER_6 = "SEMESTER_6",
+  SEMESTER_7 = "SEMESTER_7",
+  SEMESTER_8 = "SEMESTER_8",
+}
+
+// Member type based on API response
+export interface Member {
+  id: number;
+  email: string;
+  password?: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  status: Status;
+  roles: Role[];
+  department?: Department;
+  batch?: Batch;
+}
+
 // JoinCode type based on Prisma schema
 export interface JoinCode {
   id: number;
@@ -29,6 +72,15 @@ export interface JoinCode {
   createdAt: Date;
   updatedAt: Date;
   organization: Organization;
+}
+
+// FYPProjects type based on Prisma schema
+export interface FYPProject {
+  id: number;
+  title: string;
+  description: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // Zod schemas for Organization validation
@@ -53,31 +105,8 @@ export const editOrganizationSchema = z.object({
 
 // Zod schemas for JoinCode validation
 export const createJoinCodeSchema = z.object({
-  organizationId: z
-    .number({
-      error: "Select an organization first.",
-    })
-    .min(1, "Organization is required"),
-  role: z.nativeEnum(Role).refine((val) => Object.values(Role).includes(val), {
-    message: "Please select a valid role",
-  }),
-  usageLimit: z
-    .number({
-      error: "Usage limit is required.",
-    })
-    .min(1, "Usage limit must be at least 1")
-    .max(10000, "Usage limit cannot exceed 10,000"),
-  expiresAt: z.date({
-    error: "Expiration date is required.",
-  }),
-});
-
-export const editJoinCodeSchema = z.object({
-  id: z.number(),
   organizationId: z.number().min(1, "Organization is required"),
-  role: z.nativeEnum(Role).refine((val) => Object.values(Role).includes(val), {
-    message: "Please select a valid role",
-  }),
+  role: z.nativeEnum(Role),
   usageLimit: z
     .number()
     .min(1, "Usage limit must be at least 1")
@@ -87,10 +116,106 @@ export const editJoinCodeSchema = z.object({
   expiresAt: z.date().optional().nullable(),
 });
 
+export const editJoinCodeSchema = z.object({
+  id: z.number(),
+  organizationId: z.number().min(1, "Organization is required"),
+  role: z.nativeEnum(Role),
+  usageLimit: z
+    .number()
+    .min(1, "Usage limit must be at least 1")
+    .max(10000, "Usage limit cannot exceed 10,000")
+    .optional()
+    .nullable(),
+  expiresAt: z.date().optional().nullable(),
+});
+
+// Zod schemas for FYPProject validation
+export const createFYPProjectSchema = z.object({
+  title: z
+    .string()
+    .min(1, "Project title is required")
+    .min(3, "Project title must be at least 3 characters")
+    .max(200, "Project title must be less than 200 characters")
+    .trim(),
+  description: z
+    .string()
+    .min(1, "Project description is required")
+    .min(10, "Project description must be at least 10 characters")
+    .max(1000, "Project description must be less than 1000 characters")
+    .trim(),
+});
+
+export const editFYPProjectSchema = z.object({
+  id: z.number(),
+  title: z
+    .string()
+    .min(1, "Project title is required")
+    .min(3, "Project title must be at least 3 characters")
+    .max(200, "Project title must be less than 200 characters")
+    .trim(),
+  description: z
+    .string()
+    .min(1, "Project description is required")
+    .min(10, "Project description must be at least 10 characters")
+    .max(1000, "Project description must be less than 1000 characters")
+    .trim(),
+});
+
+// Zod schemas for Member validation
+export const createMemberSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Name is required")
+    .min(2, "Name must be at least 2 characters")
+    .max(100, "Name must be less than 100 characters")
+    .trim(),
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .email("Please enter a valid email address"),
+  password: z
+    .string()
+    .min(1, "Password is required")
+    .min(6, "Password must be at least 6 characters")
+    .max(100, "Password must be less than 100 characters"),
+  roles: z.array(z.nativeEnum(Role)).min(1, "At least one role is required"),
+  status: z.nativeEnum(Status),
+  department: z.nativeEnum(Department).optional(),
+  batch: z.nativeEnum(Batch).optional(),
+});
+
+export const editMemberSchema = z.object({
+  id: z.number(),
+  name: z
+    .string()
+    .min(1, "Name is required")
+    .min(2, "Name must be at least 2 characters")
+    .max(100, "Name must be less than 100 characters")
+    .trim(),
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .email("Please enter a valid email address"),
+  roles: z.array(z.nativeEnum(Role)).min(1, "At least one role is required"),
+  status: z.nativeEnum(Status),
+  department: z.nativeEnum(Department).optional(),
+  batch: z.nativeEnum(Batch).optional(),
+});
+
+export const promoteMemberSchema = z.object({
+  memberIds: z.array(z.number()).min(1, "At least one member must be selected"),
+  newBatch: z.nativeEnum(Batch),
+});
+
 export type CreateOrganizationInput = z.infer<typeof createOrganizationSchema>;
 export type EditOrganizationInput = z.infer<typeof editOrganizationSchema>;
 export type CreateJoinCodeInput = z.infer<typeof createJoinCodeSchema>;
 export type EditJoinCodeInput = z.infer<typeof editJoinCodeSchema>;
+export type CreateFYPProjectInput = z.infer<typeof createFYPProjectSchema>;
+export type EditFYPProjectInput = z.infer<typeof editFYPProjectSchema>;
+export type CreateMemberInput = z.infer<typeof createMemberSchema>;
+export type EditMemberInput = z.infer<typeof editMemberSchema>;
+export type PromoteMemberInput = z.infer<typeof promoteMemberSchema>;
 
 // Helper function to generate unique join codes
 export function generateJoinCode(): string {
@@ -124,4 +249,67 @@ export function getRoleColor(role: Role): string {
     [Role.USER]: "bg-gray-100 text-gray-800",
   };
   return roleColors[role];
+}
+
+// Helper function to get status display name
+export function getStatusDisplayName(status: Status): string {
+  const statusNames = {
+    [Status.ACTIVE]: "Active",
+    [Status.INACTIVE]: "Inactive",
+    [Status.SUSPENDED]: "Suspended",
+  };
+  return statusNames[status];
+}
+
+// Helper function to get status color
+export function getStatusColor(status: Status): string {
+  const statusColors = {
+    [Status.ACTIVE]: "bg-green-100 text-green-800",
+    [Status.INACTIVE]: "bg-gray-100 text-gray-800",
+    [Status.SUSPENDED]: "bg-red-100 text-red-800",
+  };
+  return statusColors[status];
+}
+
+// Helper function to get department display name
+export function getDepartmentDisplayName(department: Department): string {
+  const departmentNames = {
+    [Department.COMPUTER_SCIENCE]: "Computer Science",
+    [Department.SOFTWARE_ENGINEERING]: "Software Engineering",
+    [Department.ELECTRICAL_ENGINEERING]: "Electrical Engineering",
+    [Department.MECHANICAL_ENGINEERING]: "Mechanical Engineering",
+    [Department.CIVIL_ENGINEERING]: "Civil Engineering",
+    [Department.BUSINESS_ADMINISTRATION]: "Business Administration",
+  };
+  return departmentNames[department];
+}
+
+// Helper function to get batch display name
+export function getBatchDisplayName(batch: Batch): string {
+  const batchNames = {
+    [Batch.SEMESTER_1]: "Semester 1",
+    [Batch.SEMESTER_2]: "Semester 2",
+    [Batch.SEMESTER_3]: "Semester 3",
+    [Batch.SEMESTER_4]: "Semester 4",
+    [Batch.SEMESTER_5]: "Semester 5",
+    [Batch.SEMESTER_6]: "Semester 6",
+    [Batch.SEMESTER_7]: "Semester 7",
+    [Batch.SEMESTER_8]: "Semester 8",
+  };
+  return batchNames[batch];
+}
+
+// Helper function to get next semester
+export function getNextSemester(currentBatch: Batch): Batch | null {
+  const progression = {
+    [Batch.SEMESTER_1]: Batch.SEMESTER_2,
+    [Batch.SEMESTER_2]: Batch.SEMESTER_3,
+    [Batch.SEMESTER_3]: Batch.SEMESTER_4,
+    [Batch.SEMESTER_4]: Batch.SEMESTER_5,
+    [Batch.SEMESTER_5]: Batch.SEMESTER_6,
+    [Batch.SEMESTER_6]: Batch.SEMESTER_7,
+    [Batch.SEMESTER_7]: Batch.SEMESTER_8,
+    [Batch.SEMESTER_8]: null, // Graduated
+  };
+  return progression[currentBatch];
 }

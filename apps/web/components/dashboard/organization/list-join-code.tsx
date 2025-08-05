@@ -51,10 +51,11 @@ import { format, isAfter } from "date-fns";
 import type { JoinCode, Role } from "@/types/types";
 import { getRoleDisplayName, getRoleColor } from "@/types/types";
 import { EditJoinCode } from "./edit-join-code";
-import { getOrganizationJoinCodes } from "@/lib/api/joincode";
+import { deleteJoinCode, getOrganizationJoinCodes } from "@/lib/api/joincode";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store/store";
 import { se } from "date-fns/locale";
+import { useRouter } from "next/navigation";
 
 interface ListJoinCodesProps {
   refreshTrigger?: number;
@@ -66,6 +67,7 @@ export function ListJoinCodes({ refreshTrigger }: ListJoinCodesProps) {
   const selectedOrganization = useSelector(
     (state: RootState) => state.organizations.selectedOrganization,
   );
+  const router = useRouter();
   const [editingJoinCode, setEditingJoinCode] = useState<JoinCode | null>(null);
   const [deletingJoinCode, setDeletingJoinCode] = useState<JoinCode | null>(
     null,
@@ -158,17 +160,24 @@ export function ListJoinCodes({ refreshTrigger }: ListJoinCodesProps) {
     setIsDeleting(true);
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const deletedCode = await deleteJoinCode(String(joinCode.id));
 
       // Here you would make the actual API call
       console.log("Deleting join code:", joinCode.id);
 
       setJoinCodes((prev) => prev.filter((code) => code.id !== joinCode.id));
-
-      toast({
-        title: "Success",
-        description: "Join code deleted successfully.",
-      });
+      // toast({
+      //   title: "Success",
+      //   description: "Join code deleted successfully.",
+      // });
+      // toast("Event has been created", {
+      //   description: "Sunday, December 03, 2023 at 9:00 AM",
+      //   action: {
+      //     label: "Undo",
+      //     onClick: () => console.log("Undo"),
+      //   },
+      // });
+      // router.refresh();
     } catch (error) {
       toast({
         title: "Error",
@@ -409,7 +418,7 @@ export function ListJoinCodes({ refreshTrigger }: ListJoinCodesProps) {
             <AlertDialogAction
               onClick={() => deletingJoinCode && handleDelete(deletingJoinCode)}
               disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-white hover:bg-destructive/90"
             >
               {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Delete Join Code

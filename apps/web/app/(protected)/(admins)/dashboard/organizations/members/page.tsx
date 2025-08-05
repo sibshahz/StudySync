@@ -1,3 +1,5 @@
-export default function MembersPage() {
-  return <h1>Members page</h1>;
+import MembersPage from "@/components/dashboard/member/members-page";
+
+export default function Page() {
+  return <MembersPage />;
 }

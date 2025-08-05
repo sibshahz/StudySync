@@ -146,19 +146,34 @@ model Teacher {
 //
 
 model Batch {
-  id             Int            @id @default(autoincrement())
+  id             Int             @id @default(autoincrement())
   name           String
   batchYear      Int
   batchCode      String
   departmentId   Int
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 
   department     Departments     @relation(fields: [departmentId], references: [id])
   students       Student[]
   gradingSchemes GradingScheme[]
   FYPGroups      FYPGroup[]
+
+  FYPGroupRules  FYPGroupRules?
 }
+
+
+model FYPGroupRules {
+  id          Int       @id @default(autoincrement())
+  batchId     Int       @unique
+  minMembers  Int       @default(1)
+  maxMembers  Int       @default(4)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  batch       Batch     @relation(fields: [batchId], references: [id], onDelete: Cascade)
+}
+
 
 model Semester {
   id             Int             @id @default(autoincrement())
@@ -220,15 +235,16 @@ model FYPProjects {
   description String
   createdAt   DateTime               @default(now())
   updatedAt   DateTime               @updatedAt
-
+  departmentId Int?                      
   assignments FYPProjectAssignment[]
 }
 
 model FYPGroup {
   id           Int                    @id @default(autoincrement())
   name         String
-  maxMembers   Int
   batchId      Int
+  projectId    Int
+  supervisorId Int?
   departmentId Int
   createdAt    DateTime               @default(now())
   updatedAt    DateTime               @updatedAt

@@ -47,6 +47,7 @@ export async function readExcelFile(filePath: string): Promise<any[]> {
           description: row[1],
           createdAt: new Date(),
           updatedAt: new Date(),
+          departmentId: 0, // Assuming departmentId is in the third column
         };
         dataToInset.push(currentData);
       }
