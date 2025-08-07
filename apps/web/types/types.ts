@@ -60,6 +60,21 @@ export interface DepartmentEntity {
   fypGroupsCount?: number;
 }
 
+// Batch type based on Prisma schema
+export interface BatchEntity {
+  id: number;
+  name: string;
+  batchYear: number;
+  batchCode: string;
+  departmentId: number;
+  createdAt: Date;
+  updatedAt: Date;
+  department: DepartmentEntity;
+  studentsCount?: number;
+  gradingSchemesCount?: number;
+  fypGroupsCount?: number;
+}
+
 // Member type based on API response
 export interface Member {
   id: number;
@@ -243,6 +258,56 @@ export const editDepartmentSchema = z.object({
   organizationId: z.number().min(1, "Organization is required"),
 });
 
+// Zod schemas for Batch validation
+export const createBatchSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Batch name is required")
+    .min(2, "Batch name must be at least 2 characters")
+    .max(100, "Batch name must be less than 100 characters")
+    .trim(),
+  batchYear: z
+    .number()
+    .min(2020, "Batch year must be 2020 or later")
+    .max(2030, "Batch year cannot exceed 2030"),
+  batchCode: z
+    .string()
+    .min(1, "Batch code is required")
+    .min(2, "Batch code must be at least 2 characters")
+    .max(20, "Batch code must be less than 20 characters")
+    .trim()
+    .regex(
+      /^[A-Z0-9-]+$/,
+      "Batch code must contain only uppercase letters, numbers, and hyphens",
+    ),
+  departmentId: z.number().min(1, "Department is required"),
+});
+
+export const editBatchSchema = z.object({
+  id: z.number(),
+  name: z
+    .string()
+    .min(1, "Batch name is required")
+    .min(2, "Batch name must be at least 2 characters")
+    .max(100, "Batch name must be less than 100 characters")
+    .trim(),
+  batchYear: z
+    .number()
+    .min(2020, "Batch year must be 2020 or later")
+    .max(2030, "Batch year cannot exceed 2030"),
+  batchCode: z
+    .string()
+    .min(1, "Batch code is required")
+    .min(2, "Batch code must be at least 2 characters")
+    .max(20, "Batch code must be less than 20 characters")
+    .trim()
+    .regex(
+      /^[A-Z0-9-]+$/,
+      "Batch code must contain only uppercase letters, numbers, and hyphens",
+    ),
+  departmentId: z.number().min(1, "Department is required"),
+});
+
 export type CreateOrganizationInput = z.infer<typeof createOrganizationSchema>;
 export type EditOrganizationInput = z.infer<typeof editOrganizationSchema>;
 export type CreateJoinCodeInput = z.infer<typeof createJoinCodeSchema>;
@@ -254,6 +319,8 @@ export type EditMemberInput = z.infer<typeof editMemberSchema>;
 export type PromoteMemberInput = z.infer<typeof promoteMemberSchema>;
 export type CreateDepartmentInput = z.infer<typeof createDepartmentSchema>;
 export type EditDepartmentInput = z.infer<typeof editDepartmentSchema>;
+export type CreateBatchInput = z.infer<typeof createBatchSchema>;
+export type EditBatchInput = z.infer<typeof editBatchSchema>;
 
 // Helper function to generate unique join codes
 export function generateJoinCode(): string {

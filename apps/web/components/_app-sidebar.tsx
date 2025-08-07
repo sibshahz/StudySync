@@ -100,6 +100,10 @@ const data = {
           url: "/dashboard/organizations/departments",
         },
         {
+          title: "Batches",
+          url: "/dashboard/organizations/batches",
+        },
+        {
           title: "Roles & Permissions",
           url: "/dashboard/organizations/roles",
         },
