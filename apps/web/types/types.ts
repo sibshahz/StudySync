@@ -24,7 +24,7 @@ export enum Status {
   SUSPENDED = "SUSPENDED",
 }
 
-// Department enum
+// Department enum (for member assignments)
 export enum Department {
   COMPUTER_SCIENCE = "COMPUTER_SCIENCE",
   SOFTWARE_ENGINEERING = "SOFTWARE_ENGINEERING",
@@ -44,6 +44,20 @@ export enum Batch {
   SEMESTER_6 = "SEMESTER_6",
   SEMESTER_7 = "SEMESTER_7",
   SEMESTER_8 = "SEMESTER_8",
+}
+
+// Departments type based on Prisma schema
+export interface DepartmentEntity {
+  id: number;
+  name: string;
+  organizationId: number;
+  createdAt: Date;
+  updatedAt: Date;
+  organization: Organization;
+  studentsCount?: number;
+  batchesCount?: number;
+  teachersCount?: number;
+  fypGroupsCount?: number;
 }
 
 // Member type based on API response
@@ -106,7 +120,7 @@ export const editOrganizationSchema = z.object({
 // Zod schemas for JoinCode validation
 export const createJoinCodeSchema = z.object({
   organizationId: z.number().min(1, "Organization is required"),
-  role: z.nativeEnum(Role),
+  role: z.nativeEnum(Role, "Please select a valid role"),
   usageLimit: z
     .number()
     .min(1, "Usage limit must be at least 1")
@@ -119,7 +133,7 @@ export const createJoinCodeSchema = z.object({
 export const editJoinCodeSchema = z.object({
   id: z.number(),
   organizationId: z.number().min(1, "Organization is required"),
-  role: z.nativeEnum(Role),
+  role: z.nativeEnum(Role, "Please select a valid role"),
   usageLimit: z
     .number()
     .min(1, "Usage limit must be at least 1")
@@ -179,7 +193,7 @@ export const createMemberSchema = z.object({
     .min(6, "Password must be at least 6 characters")
     .max(100, "Password must be less than 100 characters"),
   roles: z.array(z.nativeEnum(Role)).min(1, "At least one role is required"),
-  status: z.nativeEnum(Status),
+  status: z.nativeEnum(Status, "Please select a valid status"),
   department: z.nativeEnum(Department).optional(),
   batch: z.nativeEnum(Batch).optional(),
 });
@@ -197,14 +211,36 @@ export const editMemberSchema = z.object({
     .min(1, "Email is required")
     .email("Please enter a valid email address"),
   roles: z.array(z.nativeEnum(Role)).min(1, "At least one role is required"),
-  status: z.nativeEnum(Status),
+  status: z.nativeEnum(Status, "Please select a valid status"),
   department: z.nativeEnum(Department).optional(),
   batch: z.nativeEnum(Batch).optional(),
 });
 
 export const promoteMemberSchema = z.object({
   memberIds: z.array(z.number()).min(1, "At least one member must be selected"),
-  newBatch: z.nativeEnum(Batch),
+  newBatch: z.nativeEnum(Batch, "Please select a valid batch/semester"),
+});
+
+// Zod schemas for Department validation
+export const createDepartmentSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Department name is required")
+    .min(2, "Department name must be at least 2 characters")
+    .max(100, "Department name must be less than 100 characters")
+    .trim(),
+  organizationId: z.number().min(1, "Organization is required"),
+});
+
+export const editDepartmentSchema = z.object({
+  id: z.number(),
+  name: z
+    .string()
+    .min(1, "Department name is required")
+    .min(2, "Department name must be at least 2 characters")
+    .max(100, "Department name must be less than 100 characters")
+    .trim(),
+  organizationId: z.number().min(1, "Organization is required"),
 });
 
 export type CreateOrganizationInput = z.infer<typeof createOrganizationSchema>;
@@ -216,6 +252,8 @@ export type EditFYPProjectInput = z.infer<typeof editFYPProjectSchema>;
 export type CreateMemberInput = z.infer<typeof createMemberSchema>;
 export type EditMemberInput = z.infer<typeof editMemberSchema>;
 export type PromoteMemberInput = z.infer<typeof promoteMemberSchema>;
+export type CreateDepartmentInput = z.infer<typeof createDepartmentSchema>;
+export type EditDepartmentInput = z.infer<typeof editDepartmentSchema>;
 
 // Helper function to generate unique join codes
 export function generateJoinCode(): string {

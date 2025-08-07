@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -128,18 +129,16 @@ export function EditJoinCode({
       // Here you would make the actual API call
       console.log("Updating join code:", values);
 
-      toast({
-        title: "Success",
-        description: "Join code updated successfully.",
+      toast("Join code updated successfully", {
+        description: "The changes have been saved.",
       });
 
       onOpenChange(false);
       onJoinCodeUpdated?.();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update join code. Please try again.",
-        variant: "destructive",
+      toast("Failed to update join code", {
+        description:
+          "Please try again or contact support if the problem persists.",
       });
     } finally {
       setIsLoading(false);

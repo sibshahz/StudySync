@@ -129,10 +129,8 @@ export function ListFYPProjects({ refreshTrigger }: ListFYPProjectsProps) {
       setProjects(response);
       setFilteredProjects(response);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch FYP projects.",
-        variant: "destructive",
+      toast("Failed to fetch FYP projects", {
+        description: "Unable to load projects. Please refresh the page.",
       });
     } finally {
       setIsLoading(false);

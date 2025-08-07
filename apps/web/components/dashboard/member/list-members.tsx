@@ -156,10 +156,8 @@ export function ListMembers({ refreshTrigger }: ListMembersProps) {
       setMembers(mockMembers);
       setFilteredMembers(mockMembers);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch members.",
-        variant: "destructive",
+      toast("Failed to fetch members", {
+        description: "Unable to load members. Please refresh the page.",
       });
     } finally {
       setIsLoading(false);
@@ -188,15 +186,13 @@ export function ListMembers({ refreshTrigger }: ListMembersProps) {
       // Remove from selected if it was selected
       setSelectedMembers((prev) => prev.filter((id) => id !== member.id));
 
-      toast({
-        title: "Success",
-        description: "Member deleted successfully.",
+      toast("Member deleted successfully", {
+        description: "The member has been removed from the system.",
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete member.",
-        variant: "destructive",
+      toast("Failed to delete member", {
+        description:
+          "Please try again or contact support if the problem persists.",
       });
     } finally {
       setIsDeleting(false);

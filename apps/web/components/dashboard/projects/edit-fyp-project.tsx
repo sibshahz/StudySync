@@ -74,18 +74,16 @@ export function EditFYPProject({
       // Here you would make the actual API call
       console.log("Updating FYP project:", values);
 
-      toast({
-        title: "Success",
-        description: "FYP project updated successfully.",
+      toast("FYP project updated successfully", {
+        description: "The changes have been saved.",
       });
 
       onOpenChange(false);
       onProjectUpdated?.();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update FYP project. Please try again.",
-        variant: "destructive",
+      toast("Failed to update FYP project", {
+        description:
+          "Please try again or contact support if the problem persists.",
       });
     } finally {
       setIsLoading(false);

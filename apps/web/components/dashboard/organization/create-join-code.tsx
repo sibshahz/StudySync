@@ -123,19 +123,17 @@ export function CreateJoinCode({ onJoinCodeCreated }: CreateJoinCodeProps) {
       // Here you would make the actual API call
       // console.log("Creating join code:", { ...values, code });
 
-      toast({
-        title: "Success",
-        description: `Join code ${response.data.code} created successfully.`,
+      toast("Join code created successfully", {
+        description: `Join code ${response.data.code} is now active and ready to use.`,
       });
 
       form.reset();
       setOpen(false);
       onJoinCodeCreated?.();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create join code. Please try again.",
-        variant: "destructive",
+      toast("Failed to create join code", {
+        description:
+          "Please try again or contact support if the problem persists.",
       });
     } finally {
       setIsLoading(false);

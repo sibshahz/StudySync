@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -23,49 +23,86 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Loader2 } from "lucide-react";
 import {
-  createFYPProjectSchema,
-  type CreateFYPProjectInput,
+  createDepartmentSchema,
+  type CreateDepartmentInput,
+  type Organization,
 } from "@/types/types";
 
-interface CreateFYPProjectProps {
-  onProjectCreated?: () => void;
+interface CreateDepartmentProps {
+  onDepartmentCreated?: () => void;
 }
 
-export function CreateFYPProject({ onProjectCreated }: CreateFYPProjectProps) {
+export function CreateDepartment({
+  onDepartmentCreated,
+}: CreateDepartmentProps) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
   const { toast } = useToast();
 
-  const form = useForm<CreateFYPProjectInput>({
-    resolver: zodResolver(createFYPProjectSchema),
+  const form = useForm<CreateDepartmentInput>({
+    resolver: zodResolver(createDepartmentSchema),
     defaultValues: {
-      title: "",
-      description: "",
+      name: "",
+      organizationId: undefined,
     },
   });
 
-  async function onSubmit(values: CreateFYPProjectInput) {
+  // Mock organizations data
+  const mockOrganizations: Organization[] = [
+    {
+      id: 1,
+      name: "University of Technology",
+      createdAt: new Date("2024-01-15"),
+      updatedAt: new Date("2024-01-15"),
+    },
+    {
+      id: 2,
+      name: "State College of Engineering",
+      createdAt: new Date("2024-01-20"),
+      updatedAt: new Date("2024-02-01"),
+    },
+    {
+      id: 3,
+      name: "Metropolitan University",
+      createdAt: new Date("2024-02-05"),
+      updatedAt: new Date("2024-02-05"),
+    },
+  ];
+
+  useEffect(() => {
+    // Fetch organizations
+    setOrganizations(mockOrganizations);
+  }, []);
+
+  async function onSubmit(values: CreateDepartmentInput) {
     setIsLoading(true);
     try {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Here you would make the actual API call
-      console.log("Creating FYP project:", values);
+      console.log("Creating department:", values);
 
-      toast("FYP project created successfully", {
-        description: "The project has been added to the system.",
+      toast("Department created successfully", {
+        description: "The department has been added to the organization.",
       });
 
       form.reset();
       setOpen(false);
-      onProjectCreated?.();
+      onDepartmentCreated?.();
     } catch (error) {
-      toast("Failed to create FYP project", {
+      toast("Failed to create department", {
         description:
           "Please try again or contact support if the problem persists.",
       });
@@ -79,34 +116,33 @@ export function CreateFYPProject({ onProjectCreated }: CreateFYPProjectProps) {
       <DialogTrigger asChild>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
-          Add Project
+          Add Department
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Create FYP Project</DialogTitle>
+          <DialogTitle>Create Department</DialogTitle>
           <DialogDescription>
-            Add a new Final Year Project to the system. Fill in the details
-            below.
+            Add a new department to the organization.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="title"
+              name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Project Title</FormLabel>
+                  <FormLabel>Department Name</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter project title"
+                      placeholder="Enter department name"
                       {...field}
                       disabled={isLoading}
                     />
                   </FormControl>
                   <FormDescription>
-                    A clear and descriptive title for the FYP project.
+                    The name of the academic department.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -115,21 +151,31 @@ export function CreateFYPProject({ onProjectCreated }: CreateFYPProjectProps) {
 
             <FormField
               control={form.control}
-              name="description"
+              name="organizationId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Project Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Enter project description"
-                      className="min-h-[120px]"
-                      {...field}
-                      disabled={isLoading}
-                    />
-                  </FormControl>
+                  <FormLabel>Organization</FormLabel>
+                  <Select
+                    onValueChange={(value) =>
+                      field.onChange(Number.parseInt(value))
+                    }
+                    disabled={isLoading}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an organization" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {organizations.map((org) => (
+                        <SelectItem key={org.id} value={org.id.toString()}>
+                          {org.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormDescription>
-                    Detailed description of the project objectives, scope, and
-                    expected outcomes.
+                    The organization this department belongs to.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -147,7 +193,7 @@ export function CreateFYPProject({ onProjectCreated }: CreateFYPProjectProps) {
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Create Project
+                Create Department
               </Button>
             </DialogFooter>
           </form>

@@ -96,10 +96,8 @@ export function ListOrganizations({ refreshTrigger }: ListOrganizationsProps) {
       // Here you would make the actual API call
       setOrganizations(response);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch organizations?.",
-        variant: "destructive",
+      toast("Failed to fetch organizations", {
+        description: "Unable to load organizations. Please refresh the page.",
       });
     } finally {
       setIsLoading(false);
@@ -119,15 +117,13 @@ export function ListOrganizations({ refreshTrigger }: ListOrganizationsProps) {
         prev.filter((org) => org.id !== organization.id),
       );
 
-      toast({
-        title: "Success",
-        description: "Organization deleted successfully.",
+      toast("Organization deleted successfully", {
+        description: "The organization has been removed from the system.",
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete organization.",
-        variant: "destructive",
+      toast("Failed to delete organization", {
+        description:
+          "Please try again or contact support if the problem persists.",
       });
     } finally {
       setIsDeleting(false);
@@ -149,10 +145,8 @@ export function ListOrganizations({ refreshTrigger }: ListOrganizationsProps) {
       setIsLoading(false);
     } else if (status === "failed") {
       setIsLoading(false);
-      toast({
-        title: "Error",
-        description: "Failed to fetch organizations.",
-        variant: "destructive",
+      toast("Failed to fetch organizations", {
+        description: "Unable to load organizations. Please refresh the page.",
       });
     }
   }, [status, toast]);

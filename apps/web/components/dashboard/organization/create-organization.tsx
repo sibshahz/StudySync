@@ -57,18 +57,16 @@ export function CreateOrganization({
       // Here you would make the actual API call
       console.log("Creating organization:", values);
 
-      toast({
-        title: "Success",
-        description: "Organization created successfully.",
+      toast("Organization created successfully", {
+        description: "The organization has been added to the system.",
       });
-
       form.reset();
       setOpen(false);
       onOrganizationCreated?.();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create organization. Please try again.",
+      toast("Failed to create organization", {
+        description:
+          "Please try again or contact support if the problem persists.",
         variant: "destructive",
       });
     } finally {

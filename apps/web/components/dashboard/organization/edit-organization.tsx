@@ -71,18 +71,16 @@ export function EditOrganization({
       // Here you would make the actual API call
       console.log("Updating organization:", values);
 
-      toast({
-        title: "Success",
-        description: "Organization updated successfully.",
+      toast("Organization updated successfully", {
+        description: "The changes have been saved.",
       });
 
       onOpenChange(false);
       onOrganizationUpdated?.();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update organization. Please try again.",
-        variant: "destructive",
+      toast("Failed to update organization", {
+        description:
+          "Please try again or contact support if the problem persists.",
       });
     } finally {
       setIsLoading(false);

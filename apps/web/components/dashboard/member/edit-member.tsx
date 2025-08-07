@@ -97,18 +97,16 @@ export function EditMember({
       // Here you would make the actual API call
       console.log("Updating member:", values);
 
-      toast({
-        title: "Success",
-        description: "Member updated successfully.",
+      toast("Member updated successfully", {
+        description: "The changes have been saved.",
       });
 
       onOpenChange(false);
       onMemberUpdated?.();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update member. Please try again.",
-        variant: "destructive",
+      toast("Failed to update member", {
+        description:
+          "Please try again or contact support if the problem persists.",
       });
     } finally {
       setIsLoading(false);

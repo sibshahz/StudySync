@@ -78,19 +78,17 @@ export function CreateMember({ onMemberCreated }: CreateMemberProps) {
       // Here you would make the actual API call
       console.log("Creating member:", values);
 
-      toast({
-        title: "Success",
-        description: "Member created successfully.",
+      toast("Member created successfully", {
+        description: "The member account has been created and is now active.",
       });
 
       form.reset();
       setOpen(false);
       onMemberCreated?.();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create member. Please try again.",
-        variant: "destructive",
+      toast("Failed to create member", {
+        description:
+          "Please try again or contact support if the problem persists.",
       });
     } finally {
       setIsLoading(false);

@@ -146,10 +146,8 @@ export function ListJoinCodes({ refreshTrigger }: ListJoinCodesProps) {
       // Here you would make the actual API call
       setJoinCodes(joinCodesResponse);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch join codes.",
-        variant: "destructive",
+      toast("Failed to fetch join codes", {
+        description: "Unable to load join codes. Please refresh the page.",
       });
     } finally {
       setIsLoading(false);
@@ -178,11 +176,13 @@ export function ListJoinCodes({ refreshTrigger }: ListJoinCodesProps) {
       //   },
       // });
       // router.refresh();
+      toast("Join code deleted successfully", {
+        description: "The join code has been removed from the system.",
+      });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete join code.",
-        variant: "destructive",
+      toast("Failed to delete join code", {
+        description:
+          "Please try again or contact support if the problem persists.",
       });
     } finally {
       setIsDeleting(false);
@@ -193,15 +193,12 @@ export function ListJoinCodes({ refreshTrigger }: ListJoinCodesProps) {
   const handleCopyCode = async (code: string) => {
     try {
       await navigator.clipboard.writeText(code);
-      toast({
-        title: "Copied",
-        description: "Join code copied to clipboard.",
+      toast("Join code copied to clipboard", {
+        description: "You can now share this code with users.",
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to copy join code.",
-        variant: "destructive",
+      toast("Failed to copy join code", {
+        description: "Please try copying the code manually.",
       });
     }
   };

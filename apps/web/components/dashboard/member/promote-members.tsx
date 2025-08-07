@@ -75,19 +75,17 @@ export function PromoteMembers({
       // Here you would make the actual API call
       console.log("Promoting members:", values);
 
-      toast({
-        title: "Success",
-        description: `${values.memberIds.length} student${values.memberIds.length !== 1 ? "s" : ""} promoted successfully.`,
+      toast("Students promoted successfully", {
+        description: `${values.memberIds.length} student${values.memberIds.length !== 1 ? "s" : ""} have been promoted.`,
       });
 
       form.reset();
       setOpen(false);
       onPromotionComplete?.();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to promote students. Please try again.",
-        variant: "destructive",
+      toast("Failed to promote students", {
+        description:
+          "Please try again or contact support if the problem persists.",
       });
     } finally {
       setIsLoading(false);
