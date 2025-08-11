@@ -10,3 +10,13 @@ export const getAllOrgMembers = async (orgId: string): Promise<[]> => {
     return [];
   }
 };
+
+export const deleteOrgMembers = async (memberId: string): Promise<any> => {
+  try {
+    const response = await axios_default.delete(`members/${memberId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to delete org member", error);
+    return null;
+  }
+}

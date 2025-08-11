@@ -73,6 +73,21 @@ const validationSchemas = {
 
     id: z.number().min(1, "Id must be atleast present"),
   }),
+
+  createDepartment: z.object({
+    name: z
+      .string()
+      .min(2, "Department name must be at least 2 characters long")
+      .max(50, "Department name cannot exceed 50 characters"),
+    organizationId: z.number().min(1, "Organization ID is required"),
+  }),
+  updateDepartment: z.object({
+    id: z.number().min(1, "Department ID is required"),
+    name: z
+      .string()
+      .min(2, "Department name must be at least 2 characters long")
+      .max(50, "Department name cannot exceed 50 characters"),
+  }),
 };
 
 export { validationSchemas };

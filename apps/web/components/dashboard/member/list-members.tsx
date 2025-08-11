@@ -69,6 +69,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Role, Status, Department, Batch } from "@/types/types"; // Import missing types
+import { deleteOrgMembers, getAllOrgMembers } from "@/lib/api/members";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/store/store";
 
 interface ListMembersProps {
   refreshTrigger?: number;
@@ -81,6 +84,10 @@ export function ListMembers({ refreshTrigger }: ListMembersProps) {
   const [editingMember, setEditingMember] = useState<Member | null>(null);
   const [deletingMember, setDeletingMember] = useState<Member | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const selectedOrgId = useSelector(
+    (state: RootState) => state.organizations.selectedOrganization?.id,
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<number[]>([]);
   const { toast } = useToast();
@@ -149,12 +156,11 @@ export function ListMembers({ refreshTrigger }: ListMembersProps) {
   const fetchMembers = async () => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const members = await getAllOrgMembers(String(selectedOrgId));
 
-      // Here you would make the actual API call
-      setMembers(mockMembers);
-      setFilteredMembers(mockMembers);
+      setMembers(members);
+
+      setFilteredMembers(members);
     } catch (error) {
       toast("Failed to fetch members", {
         description: "Unable to load members. Please refresh the page.",
@@ -168,7 +174,7 @@ export function ListMembers({ refreshTrigger }: ListMembersProps) {
     setIsDeleting(true);
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const deletedMember = await deleteOrgMembers(String(member.id));
 
       // Here you would make the actual API call
       console.log("Deleting member:", member.id);
@@ -271,8 +277,14 @@ export function ListMembers({ refreshTrigger }: ListMembersProps) {
   };
 
   useEffect(() => {
+    // if (!selectedOrgId?.id) return; // Don't run if org is not yet selected
     fetchMembers();
-  }, [refreshTrigger]);
+  }, []);
+
+  useEffect(() => {
+    if (!selectedOrgId) return; // Don't run if org is not yet selected
+    fetchMembers();
+  }, [refreshTrigger, selectedOrgId]);
 
   useEffect(() => {
     applyFilters();

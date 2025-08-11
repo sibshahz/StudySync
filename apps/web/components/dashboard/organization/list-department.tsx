@@ -53,6 +53,9 @@ import {
 import { format } from "date-fns";
 import type { DepartmentEntity } from "@/types/types";
 import { EditDepartment } from "./edit-department";
+import { getDepartments } from "@/lib/api/departments";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/store/store";
 
 interface ListDepartmentsProps {
   refreshTrigger?: number;
@@ -63,6 +66,9 @@ export function ListDepartments({ refreshTrigger }: ListDepartmentsProps) {
   const [filteredDepartments, setFilteredDepartments] = useState<
     DepartmentEntity[]
   >([]);
+  const selectedOrganization = useSelector(
+    (state: RootState) => state.organizations.selectedOrganization,
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [editingDepartment, setEditingDepartment] =
     useState<DepartmentEntity | null>(null);
@@ -165,11 +171,14 @@ export function ListDepartments({ refreshTrigger }: ListDepartmentsProps) {
     setIsLoading(true);
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
+      // await new Promise((resolve) => setTimeout(resolve, 1000));
+      const departments = await getDepartments(
+        String(selectedOrganization?.id),
+      );
+      console.log("*** Fetched departments:", departments);
       // Here you would make the actual API call
-      setDepartments(mockDepartments);
-      setFilteredDepartments(mockDepartments);
+      setDepartments(departments);
+      setFilteredDepartments(departments);
     } catch (error) {
       toast("Failed to fetch departments", {
         description: "Unable to load departments. Please refresh the page.",
@@ -233,8 +242,16 @@ export function ListDepartments({ refreshTrigger }: ListDepartmentsProps) {
   };
 
   useEffect(() => {
-    fetchDepartments();
-  }, [refreshTrigger]);
+    if (!selectedOrganization) {
+      console.warn(
+        "No organization selected. Please select an organization to view departments.",
+      );
+      setIsLoading(false);
+      return;
+    } else {
+      fetchDepartments();
+    }
+  }, [selectedOrganization, refreshTrigger]);
 
   const formatDate = (date: Date) => {
     return format(date, "MMM dd, yyyy");
@@ -309,11 +326,11 @@ export function ListDepartments({ refreshTrigger }: ListDepartmentsProps) {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Department</TableHead>
-                    <TableHead>Organization</TableHead>
+                    {/* <TableHead>Organization</TableHead> */}
                     <TableHead>Students</TableHead>
                     <TableHead>Teachers</TableHead>
                     <TableHead>Batches</TableHead>
-                    <TableHead>FYP Groups</TableHead>
+                    {/* <TableHead>FYP Groups</TableHead> */}
                     <TableHead>Created</TableHead>
                     <TableHead className="w-[70px]">Actions</TableHead>
                   </TableRow>
@@ -330,16 +347,16 @@ export function ListDepartments({ refreshTrigger }: ListDepartmentsProps) {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      {/* <TableCell>
                         <span className="text-sm">
                           {department.organization.name}
                         </span>
-                      </TableCell>
+                      </TableCell> */}
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <Users className="h-3 w-3 text-blue-500" />
                           <span className="font-medium">
-                            {department.studentsCount || 0}
+                            {department._count.students || 0}
                           </span>
                         </div>
                       </TableCell>
@@ -347,7 +364,7 @@ export function ListDepartments({ refreshTrigger }: ListDepartmentsProps) {
                         <div className="flex items-center gap-1">
                           <GraduationCap className="h-3 w-3 text-green-500" />
                           <span className="font-medium">
-                            {department.teachersCount || 0}
+                            {department._count.teachers || 0}
                           </span>
                         </div>
                       </TableCell>
@@ -355,18 +372,18 @@ export function ListDepartments({ refreshTrigger }: ListDepartmentsProps) {
                         <div className="flex items-center gap-1">
                           <Calendar className="h-3 w-3 text-purple-500" />
                           <span className="font-medium">
-                            {department.batchesCount || 0}
+                            {department._count.batches || 0}
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      {/* <TableCell>
                         <div className="flex items-center gap-1">
                           <BookOpen className="h-3 w-3 text-orange-500" />
                           <span className="font-medium">
                             {department.fypGroupsCount || 0}
                           </span>
                         </div>
-                      </TableCell>
+                      </TableCell> */}
                       <TableCell>
                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
                           <Calendar className="h-3 w-3" />

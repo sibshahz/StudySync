@@ -37,6 +37,9 @@ import {
   type CreateDepartmentInput,
   type Organization,
 } from "@/types/types";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/lib/store/store";
+import { createDepartment } from "@/lib/api/departments";
 
 interface CreateDepartmentProps {
   onDepartmentCreated?: () => void;
@@ -48,6 +51,15 @@ export function CreateDepartment({
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
+
+  const dispatch = useDispatch<AppDispatch>();
+  const selectedOrganization = useSelector(
+    (state: RootState) => state.organizations.selectedOrganization,
+  );
+  const userOrganizations = useSelector(
+    (state: RootState) => state.organizations.userOrganizations,
+  );
+
   const { toast } = useToast();
 
   const form = useForm<CreateDepartmentInput>({
@@ -82,14 +94,22 @@ export function CreateDepartment({
 
   useEffect(() => {
     // Fetch organizations
-    setOrganizations(mockOrganizations);
+    if (userOrganizations.length > 0) {
+      setOrganizations(userOrganizations);
+    } else {
+      // Fallback to mock data if no organizations are available
+      setOrganizations(mockOrganizations);
+    }
   }, []);
 
   async function onSubmit(values: CreateDepartmentInput) {
     setIsLoading(true);
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const createdDepartment = await createDepartment({
+        name: values.name,
+        organizationId: values.organizationId,
+      });
 
       // Here you would make the actual API call
       console.log("Creating department:", values);
@@ -167,7 +187,7 @@ export function CreateDepartment({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {organizations.map((org) => (
+                      {userOrganizations.map((org) => (
                         <SelectItem key={org.id} value={org.id.toString()}>
                           {org.name}
                         </SelectItem>

@@ -21,7 +21,7 @@ memberRouter.use(
 );
 
 // projRouter.put("/:projId", validate("updateProject"), projController.FYPProjectAssignmentUpdateWithoutProjectInput);
-// projRouter.delete("/:projId", validate("deleteProject"), projController.deleteProject);
+memberRouter.delete("/:memberId", memberController.deleteOrgMember);
 memberRouter.get("/:orgId", memberController.getAllOrgMembers);
 // memberRouter.get(
 //   "/:projId",
