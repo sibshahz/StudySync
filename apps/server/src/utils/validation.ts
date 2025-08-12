@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { UserRole } from "@repo/database/enums";
+import { createBatch } from "@/services/batchService";
 
 // Shared enums
 const userRoleEnum = z.nativeEnum(UserRole);
@@ -87,6 +88,18 @@ const validationSchemas = {
       .string()
       .min(2, "Department name must be at least 2 characters long")
       .max(50, "Department name cannot exceed 50 characters"),
+  }),
+  createBatch: z.object({
+    name: z
+      .string()
+      .min(2, "Batch name must be at least 2 characters long")
+      .max(50, "Batch name cannot exceed 50 characters"),
+  }),
+  updateBatch: z.object({
+    name: z
+      .string()
+      .min(2, "Batch name must be at least 2 characters long")
+      .max(50, "Batch name cannot exceed 50 characters"),
   }),
 };
 
