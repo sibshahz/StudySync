@@ -5,16 +5,27 @@ export const getAllBatches = async (orgId: string) => {
     const departments = await prisma.departments.findMany({
       where: { organizationId: Number(orgId) },
       include: {
-        batches: true,
-        _count: {
-          select: {
-            students: true,
-            teachers: true,
+        batches: {
+          include: {
+            _count: {
+              select: {
+                students: true,
+                // teachers: true,
+              },
+            },
           },
         },
       },
     });
-    return departments;
+    return departments.flatMap((dept) => {
+      return dept.batches.map((batch) => ({
+        ...batch,
+        departmentId: dept.id,
+        departmentName: dept.name,
+        studentCount: batch._count.students,
+        // teacherCount: batch._count.teachers,
+      }));
+    });
   } catch (error) {
     console.error("Failed to fetch batches:", error);
     return [];

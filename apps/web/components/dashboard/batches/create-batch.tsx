@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useSelector } from "react-redux";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -36,57 +37,22 @@ import {
   type CreateBatchInput,
   type DepartmentEntity,
 } from "@/types/types";
+import { createBatch } from "@/lib/api/batches";
+import { getDepartments } from "@/lib/api/departments";
+import type { RootState } from "@/lib/store/store";
 
 interface CreateBatchProps {
   onBatchCreated: () => void;
 }
 
-// Mock departments data - replace with actual API call
-const mockDepartments: DepartmentEntity[] = [
-  {
-    id: 1,
-    name: "Computer Science",
-    organizationId: 1,
-    createdAt: new Date("2024-01-15"),
-    updatedAt: new Date("2024-01-15"),
-    organization: {
-      id: 1,
-      name: "Tech University",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  },
-  {
-    id: 2,
-    name: "Software Engineering",
-    organizationId: 1,
-    createdAt: new Date("2024-01-16"),
-    updatedAt: new Date("2024-01-16"),
-    organization: {
-      id: 1,
-      name: "Tech University",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  },
-  {
-    id: 3,
-    name: "Electrical Engineering",
-    organizationId: 1,
-    createdAt: new Date("2024-01-17"),
-    updatedAt: new Date("2024-01-17"),
-    organization: {
-      id: 1,
-      name: "Tech University",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  },
-];
-
 export function CreateBatch({ onBatchCreated }: CreateBatchProps) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [departments, setDepartments] = useState<DepartmentEntity[]>([]);
+  const [loadingDepartments, setLoadingDepartments] = useState(true);
+  
+  // Get selected organization from Redux store
+  const selectedOrganization = useSelector((state: RootState) => state.organizations.selectedOrganization);
 
   const form = useForm<CreateBatchInput>({
     resolver: zodResolver(createBatchSchema),
@@ -98,13 +64,44 @@ export function CreateBatch({ onBatchCreated }: CreateBatchProps) {
     },
   });
 
+  // Fetch departments when component mounts or organization changes
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      if (!selectedOrganization?.id) {
+        setDepartments([]);
+        setLoadingDepartments(false);
+        return;
+      }
+
+      setLoadingDepartments(true);
+      try {
+        const fetchedDepartments = await getDepartments(selectedOrganization.id.toString());
+        setDepartments(fetchedDepartments || []);
+      } catch (error) {
+        console.error("Error fetching departments:", error);
+        toast("Error loading departments", {
+          description: "Could not load departments. Please try again.",
+        });
+        setDepartments([]);
+      } finally {
+        setLoadingDepartments(false);
+      }
+    };
+
+    fetchDepartments();
+  }, [selectedOrganization?.id]);
+
   const onSubmit = async (data: CreateBatchInput) => {
+    if (!selectedOrganization) {
+      toast("Error", {
+        description: "Please select an organization first.",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      console.log("Creating batch:", data);
+      await createBatch(data);
 
       toast("Batch created successfully", {
         description: `${data.name} (${data.batchCode}) has been created for ${data.batchYear}`,
@@ -113,10 +110,9 @@ export function CreateBatch({ onBatchCreated }: CreateBatchProps) {
       form.reset();
       setOpen(false);
       onBatchCreated();
-    } catch (error) {
+    } catch (error: any) {
       toast("Error creating batch", {
-        description:
-          "There was a problem creating the batch. Please try again.",
+        description: error?.response?.data?.message || "There was a problem creating the batch. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -128,7 +124,7 @@ export function CreateBatch({ onBatchCreated }: CreateBatchProps) {
     const batchYear = form.getValues("batchYear");
 
     if (selectedDepartmentId && batchYear) {
-      const department = mockDepartments.find(
+      const department = departments.find(
         (d) => d.id === selectedDepartmentId,
       );
       if (department) {
@@ -230,14 +226,25 @@ export function CreateBatch({ onBatchCreated }: CreateBatchProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {mockDepartments.map((department) => (
-                        <SelectItem
-                          key={department.id}
-                          value={department.id.toString()}
-                        >
-                          {department.name}
-                        </SelectItem>
-                      ))}
+                      {loadingDepartments ? (
+                        <div className="flex items-center justify-center p-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span className="ml-2 text-sm">Loading departments...</span>
+                        </div>
+                      ) : departments.length === 0 ? (
+                        <div className="p-2 text-sm text-muted-foreground text-center">
+                          {selectedOrganization ? "No departments found" : "Please select an organization first"}
+                        </div>
+                      ) : (
+                        departments.map((department) => (
+                          <SelectItem
+                            key={department.id}
+                            value={department.id.toString()}
+                          >
+                            {department.name}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />

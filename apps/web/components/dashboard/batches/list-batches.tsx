@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -34,105 +35,65 @@ import {
   BookOpen,
   Trophy,
   Calendar,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { EditBatch } from "./edit-batch";
 import type { BatchEntity } from "@/types/types";
+import { getAllBatches, deleteBatch } from "@/lib/api/batches";
+import type { RootState } from "@/lib/store/store";
 
 interface ListBatchesProps {
   refreshTrigger: number;
 }
 
-// Mock batches data - replace with actual API call
-const mockBatches: BatchEntity[] = [
-  {
-    id: 1,
-    name: "Fall 2024 Computer Science",
-    batchYear: 2024,
-    batchCode: "CS-24",
-    departmentId: 1,
-    createdAt: new Date("2024-01-15"),
-    updatedAt: new Date("2024-01-15"),
-    department: {
-      id: 1,
-      name: "Computer Science",
-      organizationId: 1,
-      createdAt: new Date("2024-01-15"),
-      updatedAt: new Date("2024-01-15"),
-      organization: {
-        id: 1,
-        name: "Tech University",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    },
-    studentsCount: 45,
-    gradingSchemesCount: 3,
-    fypGroupsCount: 8,
-  },
-  {
-    id: 2,
-    name: "Spring 2024 Software Engineering",
-    batchYear: 2024,
-    batchCode: "SE-24",
-    departmentId: 2,
-    createdAt: new Date("2024-02-01"),
-    updatedAt: new Date("2024-02-01"),
-    department: {
-      id: 2,
-      name: "Software Engineering",
-      organizationId: 1,
-      createdAt: new Date("2024-01-16"),
-      updatedAt: new Date("2024-01-16"),
-      organization: {
-        id: 1,
-        name: "Tech University",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    },
-    studentsCount: 38,
-    gradingSchemesCount: 2,
-    fypGroupsCount: 6,
-  },
-  {
-    id: 3,
-    name: "Fall 2023 Electrical Engineering",
-    batchYear: 2023,
-    batchCode: "EE-23",
-    departmentId: 3,
-    createdAt: new Date("2023-08-15"),
-    updatedAt: new Date("2023-08-15"),
-    department: {
-      id: 3,
-      name: "Electrical Engineering",
-      organizationId: 1,
-      createdAt: new Date("2024-01-17"),
-      updatedAt: new Date("2024-01-17"),
-      organization: {
-        id: 1,
-        name: "Tech University",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    },
-    studentsCount: 52,
-    gradingSchemesCount: 4,
-    fypGroupsCount: 10,
-  },
-];
-
 export function ListBatches({ refreshTrigger }: ListBatchesProps) {
-  const [batches] = useState<BatchEntity[]>(mockBatches);
+  const [batches, setBatches] = useState<BatchEntity[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [editingBatch, setEditingBatch] = useState<BatchEntity | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Get selected organization from Redux store
+  const selectedOrganization = useSelector(
+    (state: RootState) => state.organizations.selectedOrganization,
+  );
+
+  // Fetch batches when component mounts, refreshTrigger changes, or organization changes
+  useEffect(() => {
+    const fetchBatches = async () => {
+      if (!selectedOrganization?.id) {
+        setBatches([]);
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const fetchedBatches = await getAllBatches(
+          selectedOrganization.id.toString(),
+        );
+        console.log("*** Fetched batches:", fetchedBatches);
+        setBatches(fetchedBatches || []);
+      } catch (error) {
+        console.error("Error fetching batches:", error);
+        toast("Error loading batches", {
+          description: "Could not load batches. Please try again.",
+        });
+        setBatches([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBatches();
+  }, [refreshTrigger, selectedOrganization?.id]);
 
   const filteredBatches = batches.filter(
     (batch) =>
       batch.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       batch.batchCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      batch.department.name.toLowerCase().includes(searchTerm.toLowerCase()),
+      batch.departmentName.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleEdit = (batch: BatchEntity) => {
@@ -141,16 +102,30 @@ export function ListBatches({ refreshTrigger }: ListBatchesProps) {
   };
 
   const handleDelete = async (batch: BatchEntity) => {
+    if (!selectedOrganization?.id) {
+      toast("Error", {
+        description: "Please select an organization first.",
+      });
+      return;
+    }
+
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await deleteBatch(
+        selectedOrganization.id.toString(),
+        batch.departmentId.toString(),
+        batch.id.toString(),
+      );
+
+      // Remove the deleted batch from the local state
+      setBatches((prevBatches) => prevBatches.filter((b) => b.id !== batch.id));
 
       toast("Batch deleted successfully", {
         description: `${batch.name} has been removed from the system`,
       });
-    } catch (error) {
+    } catch (error: any) {
       toast("Error deleting batch", {
         description:
+          error?.response?.data?.message ||
           "There was a problem deleting the batch. Please try again.",
       });
     }
@@ -168,6 +143,30 @@ export function ListBatches({ refreshTrigger }: ListBatchesProps) {
     (sum, batch) => sum + (batch.fypGroupsCount || 0),
     0,
   );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading batches...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!selectedOrganization) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <Calendar className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
+          <p className="text-muted-foreground">
+            Please select an organization to view batches.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -282,7 +281,7 @@ export function ListBatches({ refreshTrigger }: ListBatchesProps) {
                       <Badge variant="outline">{batch.batchCode}</Badge>
                     </TableCell>
                     <TableCell>{batch.batchYear}</TableCell>
-                    <TableCell>{batch.department.name}</TableCell>
+                    <TableCell>{batch?.departmentName}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <Users className="h-3 w-3 text-blue-500" />
@@ -308,7 +307,7 @@ export function ListBatches({ refreshTrigger }: ListBatchesProps) {
                       </div>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {batch.createdAt.toLocaleDateString()}
+                      {new Date(batch.createdAt).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
@@ -347,8 +346,20 @@ export function ListBatches({ refreshTrigger }: ListBatchesProps) {
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         onBatchUpdated={() => {
-          // Refresh the list
-          console.log("Batch updated, refreshing list...");
+          // Refresh the list by re-fetching data
+          const fetchBatches = async () => {
+            if (selectedOrganization?.id) {
+              try {
+                const fetchedBatches = await getAllBatches(
+                  selectedOrganization.id.toString(),
+                );
+                setBatches(fetchedBatches || []);
+              } catch (error) {
+                console.error("Error refreshing batches:", error);
+              }
+            }
+          };
+          fetchBatches();
         }}
       />
     </div>

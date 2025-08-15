@@ -138,6 +138,58 @@ const validationSchemas = {
       path: ["endDate"],
     }
   ),
+  createFYPGroupRules: z.object({
+    minMembers: z
+      .number()
+      .int()
+      .min(1, "Minimum members must be at least 1")
+      .max(10, "Minimum members cannot exceed 10")
+      .optional(),
+    maxMembers: z
+      .number()
+      .int()
+      .min(1, "Maximum members must be at least 1")
+      .max(10, "Maximum members cannot exceed 10")
+      .optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.minMembers && data.maxMembers) {
+        return data.minMembers <= data.maxMembers;
+      }
+      return true;
+    },
+    {
+      message: "Minimum members cannot be greater than maximum members",
+      path: ["minMembers"],
+    }
+  ),
+  updateFYPGroupRules: z.object({
+    minMembers: z
+      .number()
+      .int()
+      .min(1, "Minimum members must be at least 1")
+      .max(10, "Minimum members cannot exceed 10")
+      .optional(),
+    maxMembers: z
+      .number()
+      .int()
+      .min(1, "Maximum members must be at least 1")
+      .max(10, "Maximum members cannot exceed 10")
+      .optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.minMembers && data.maxMembers) {
+        return data.minMembers <= data.maxMembers;
+      }
+      return true;
+    },
+    {
+      message: "Minimum members cannot be greater than maximum members",
+      path: ["minMembers"],
+    }
+  ),
 };
 
 export { validationSchemas };

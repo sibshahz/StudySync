@@ -49,7 +49,7 @@ export enum Batch {
 // Departments type based on Prisma schema
 export interface DepartmentEntity {
   id: number;
-  name: string;
+  departmentName: string;
   organizationId: number;
   createdAt: Date;
   updatedAt: Date;
@@ -66,10 +66,11 @@ export interface BatchEntity {
   name: string;
   batchYear: number;
   batchCode: string;
-  departmentId: number;
   createdAt: Date;
   updatedAt: Date;
-  department: DepartmentEntity;
+  departmentName: string;
+  departmentId: number;
+  // department: DepartmentEntity;
   studentsCount?: number;
   gradingSchemesCount?: number;
   fypGroupsCount?: number;

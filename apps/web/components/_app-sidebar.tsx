@@ -203,6 +203,10 @@ const data = {
           url: "/dashboard/fyp/projects",
         },
         {
+          title: "FYP Grading Schemes",
+          url: "/dashboard/fyp/grading-schemes",
+        },
+        {
           title: "Supervisors",
           url: "/dashboard/fyp/supervisors",
         },

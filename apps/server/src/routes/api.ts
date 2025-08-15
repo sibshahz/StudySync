@@ -7,6 +7,7 @@ import memberRouter from "./member/members.router";
 import departmentRouter from "./department/department.router";
 import batchRouter from "./batches/batch.router";
 import semesterRouter from "./semesters/semester.router";
+import fypGroupRulesRouter from "./fypGroupRules/fypGroupRules.router";
 
 const api = express.Router();
 
@@ -18,6 +19,7 @@ api.use("/members", memberRouter);
 api.use("/departments", departmentRouter);
 api.use("/batch", batchRouter);
 api.use("/semesters", semesterRouter);
+api.use("/fyp-group-rules", fypGroupRulesRouter);
 api.get("/params", (req, res) => {
   res.json({
     message: req.query,
