@@ -6,6 +6,10 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "db:generate": "prisma generate --schema=packages/database/prisma/schema.prisma",
+    "db:migrate": "prisma migrate deploy --schema=packages/database/prisma/schema.prisma",
+    "database:generate": "turbo run db:generate",
+    "database:migrate": "turbo run db:migrate",
     "check-types": "turbo run check-types"
   },
   "devDependencies": {
