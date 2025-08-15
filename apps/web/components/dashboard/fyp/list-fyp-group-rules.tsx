@@ -137,26 +137,27 @@ export function ListFYPGroupRules({ refreshTrigger }: ListFYPGroupRulesProps) {
     }
   };
 
-  // Calculate statistics
-  const totalRules = groupRules.length;
+  // Calculate statistics - only consider rules with valid rule.id
+  const validRules = groupRules.filter((rule) => rule.id && rule.id > 0);
+  const totalRules = validRules.length;
   const averageMinMembers =
-    groupRules.length > 0
+    validRules.length > 0
       ? Math.round(
-          (groupRules.reduce((sum, rule) => sum + rule.minMembers, 0) /
-            groupRules.length) *
+          (validRules.reduce((sum, rule) => sum + rule.minMembers, 0) /
+            validRules.length) *
             10,
         ) / 10
       : 0;
   const averageMaxMembers =
-    groupRules.length > 0
+    validRules.length > 0
       ? Math.round(
-          (groupRules.reduce((sum, rule) => sum + rule.maxMembers, 0) /
-            groupRules.length) *
+          (validRules.reduce((sum, rule) => sum + rule.maxMembers, 0) /
+            validRules.length) *
             10,
         ) / 10
       : 0;
   const uniqueDepartments = new Set(
-    groupRules.map((rule) => rule.departmentName),
+    validRules.map((rule) => rule.departmentName).filter(Boolean),
   ).size;
 
   if (loading) {
