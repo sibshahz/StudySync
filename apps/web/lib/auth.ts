@@ -119,27 +119,29 @@ export const authAPI = {
     });
 
     if (!response.ok) {
-      throw new Error("Token refresh failed");
+      const error = await response.json();
+      throw new Error(error.message || "Token refresh failed");
     }
 
-    return response.json();
+    const data = await response.json();
+    return data.data;
   },
 
   getProfile: async (token: string): Promise<User> => {
     const response = await fetch(`${API_BASE_URL}/auth/profile`, {
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
       },
       credentials: "include",
     });
-    console.log("***Fetching profile with token:", token);
-    console.log("***Response status:", response.status);
-    console.log("***Response is: ", response);
-    // if (!response.ok) {
-    //   throw new Error("***Failed to get profile: " + JSON.stringify(response));
-    // }
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to get profile");
+    }
+    
     const data = await response.json();
-    console.log("***Profile data:", data);
     return data.data;
   },
 

@@ -6,6 +6,7 @@ import projRouter from "./project/project.router";
 import memberRouter from "./member/members.router";
 import departmentRouter from "./department/department.router";
 import batchRouter from "./batches/batch.router";
+import semesterRouter from "./semesters/semester.router";
 
 const api = express.Router();
 
@@ -16,6 +17,7 @@ api.use("/project", projRouter);
 api.use("/members", memberRouter);
 api.use("/departments", departmentRouter);
 api.use("/batch", batchRouter);
+api.use("/semesters", semesterRouter);
 api.get("/params", (req, res) => {
   res.json({
     message: req.query,

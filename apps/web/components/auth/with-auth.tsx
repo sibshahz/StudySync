@@ -37,7 +37,7 @@ export function withAuth<P extends object>(
     if (
       requiredRoles.length > 0 &&
       user &&
-      !canAccessRoute(user.role, requiredRoles)
+      !canAccessRoute(user.roles, requiredRoles)
     ) {
       return (
         <div className="min-h-screen flex items-center justify-center">

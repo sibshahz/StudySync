@@ -103,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const refreshToken = tokenStorage.getRefreshToken();
 
       if (!token || !refreshToken) {
-        dispatch({ type: "SET_LOADING", payload: false });
+        dispatch({ type: "CLEAR_USER" });
         return;
       }
 
@@ -124,9 +124,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       dispatch({ type: "SET_LOADING", payload: true });
       const response = await authAPI.login(credentials);
+      
+      // Store tokens first
       tokenStorage.setToken(response.token);
       tokenStorage.setRefreshToken(response.refreshToken);
 
+      // Then update the auth state
       dispatch({
         type: "SET_USER",
         payload: {
@@ -136,7 +139,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
       });
     } catch (error) {
-      dispatch({ type: "SET_LOADING", payload: false });
+      // Clear any partial state on error
+      tokenStorage.removeTokens();
+      dispatch({ type: "CLEAR_USER" });
       throw error;
     }
   };
@@ -145,10 +150,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       dispatch({ type: "SET_LOADING", payload: true });
       const response = await authAPI.signup(credentials);
-      console.log("*** RESPONSE IS: ", response);
+      
+      // Store tokens first
       tokenStorage.setToken(response.token);
       tokenStorage.setRefreshToken(response.refreshToken);
 
+      // Then update the auth state
       dispatch({
         type: "SET_USER",
         payload: {
@@ -158,7 +165,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
       });
     } catch (error) {
-      dispatch({ type: "SET_LOADING", payload: false });
+      // Clear any partial state on error
+      tokenStorage.removeTokens();
+      dispatch({ type: "CLEAR_USER" });
       throw error;
     }
   };

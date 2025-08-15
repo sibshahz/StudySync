@@ -1,9 +1,10 @@
 import { z } from "zod";
-import { UserRole } from "@repo/database/enums";
+import { UserRole, SemesterSeason } from "@repo/database/enums";
 import { createBatch } from "@/services/batchService";
 
 // Shared enums
 const userRoleEnum = z.nativeEnum(UserRole);
+const semesterSeasonEnum = z.nativeEnum(SemesterSeason);
 
 // Now
 const validationSchemas = {
@@ -101,6 +102,42 @@ const validationSchemas = {
       .min(2, "Batch name must be at least 2 characters long")
       .max(50, "Batch name cannot exceed 50 characters"),
   }),
+  createSemester: z.object({
+    name: z
+      .string()
+      .min(2, "Semester name must be at least 2 characters long")
+      .max(100, "Semester name cannot exceed 100 characters"),
+    semesterSeason: semesterSeasonEnum,
+    startDate: z.coerce
+      .date()
+      .refine((date) => date >= new Date(), {
+        message: "Start date must be today or in the future",
+      }),
+    endDate: z.coerce.date(),
+  })
+  .refine(
+    (data) => data.endDate > data.startDate,
+    {
+      message: "End date must be after start date",
+      path: ["endDate"],
+    }
+  ),
+  updateSemester: z.object({
+    name: z
+      .string()
+      .min(2, "Semester name must be at least 2 characters long")
+      .max(100, "Semester name cannot exceed 100 characters"),
+    semesterSeason: semesterSeasonEnum,
+    startDate: z.coerce.date(),
+    endDate: z.coerce.date(),
+  })
+  .refine(
+    (data) => data.endDate > data.startDate,
+    {
+      message: "End date must be after start date",
+      path: ["endDate"],
+    }
+  ),
 };
 
 export { validationSchemas };

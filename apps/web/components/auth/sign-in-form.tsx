@@ -2,12 +2,14 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
+import { LoadingOverlay } from "@/components/ui/loading-overlay";
 import {
   Card,
   CardContent,
@@ -22,31 +24,52 @@ export default function SignInForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { login, isLoading, user } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login, isLoading, user, isAuthenticated } = useAuth();
   const router = useRouter();
+
+  // Handle navigation after successful authentication
+  useEffect(() => {
+    if (isAuthenticated && user && !isLoading) {
+      if (user.roles.includes("ADMIN")) {
+        router.push("/dashboard");
+      } else if (user.roles.includes("TEACHER")) {
+        router.push("/dashboard-teacher");
+      } else if (user.roles.includes("STUDENT")) {
+        router.push("/lms");
+      } else {
+        router.push("/dashboard");
+      }
+    }
+  }, [isAuthenticated, user, isLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Prevent double submission
+    if (isSubmitting || isLoading) {
+      return;
+    }
+    
     setError("");
+    setIsSubmitting(true);
 
     try {
       await login({ email, password });
-      setTimeout(() => {
-        if (user?.roles.includes("ADMIN")) {
-          router.push("/dashboard");
-        } else if (user?.roles.includes("TEACHER")) {
-          router.push("/dashboard-teacher");
-        } else if (user?.roles.includes("STUDENT")) {
-          router.push("/lms");
-        }
-      }, 1000);
+      // Navigation is now handled by the useEffect above
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center bg-gray-50 p-4">
+    <>
+      <LoadingOverlay 
+        isVisible={!!(isAuthenticated && user && !error)} 
+        message="Redirecting to dashboard..." 
+      />
+      <div className="flex items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
@@ -84,8 +107,19 @@ export default function SignInForm() {
             )}
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Signing In..." : "Sign In"}
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={isLoading || isSubmitting}
+            >
+              {(isLoading || isSubmitting) ? (
+                <div className="flex items-center justify-center gap-2">
+                  <Spinner size="sm" />
+                  <span>Signing In...</span>
+                </div>
+              ) : (
+                "Sign In"
+              )}
             </Button>
             <p className="text-sm text-center text-muted-foreground">
               {"Don't have an account? "}
@@ -97,5 +131,6 @@ export default function SignInForm() {
         </form>
       </Card>
     </div>
+    </>
   );
 }
