@@ -5,7 +5,9 @@ import * as fypGroupRulesService from "@/services/fypGroupRulesService";
 export const getAllFYPGroupRules = async (req: Request, res: Response) => {
   try {
     const orgId = req.params.orgId;
-    const groupRules = await fypGroupRulesService.getAllFYPGroupRules(String(orgId));
+    const groupRules = await fypGroupRulesService.getAllFYPGroupRules(
+      String(orgId)
+    );
     res.status(200).json({
       success: true,
       data: groupRules,
@@ -15,11 +17,16 @@ export const getAllFYPGroupRules = async (req: Request, res: Response) => {
   }
 };
 
-export const getFYPGroupRulesByBatchId = async (req: Request, res: Response) => {
+export const getFYPGroupRulesByBatchId = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const batchId = req.params.batchId;
-    const groupRules = await fypGroupRulesService.getFYPGroupRulesByBatchId(String(batchId));
-    
+    const groupRules = await fypGroupRulesService.getFYPGroupRulesByBatchId(
+      String(batchId)
+    );
+
     if (!groupRules) {
       return res.status(404).json({
         success: false,
@@ -39,8 +46,10 @@ export const getFYPGroupRulesByBatchId = async (req: Request, res: Response) => 
 export const getFYPGroupRulesById = async (req: Request, res: Response) => {
   try {
     const id = req.params.id;
-    const groupRules = await fypGroupRulesService.getFYPGroupRulesById(String(id));
-    
+    const groupRules = await fypGroupRulesService.getFYPGroupRulesById(
+      String(id)
+    );
+
     if (!groupRules) {
       return res.status(404).json({
         success: false,
@@ -79,7 +88,8 @@ export const createFYPGroupRules = async (req: Request, res: Response) => {
     if (!newGroupRules) {
       return res.status(400).json({
         success: false,
-        message: "Failed to create FYP group rules. Rules may already exist for this batch.",
+        message:
+          "Failed to create FYP group rules. Rules may already exist for this batch.",
       });
     }
 
@@ -130,7 +140,9 @@ export const updateFYPGroupRules = async (req: Request, res: Response) => {
 export const deleteFYPGroupRules = async (req: Request, res: Response) => {
   try {
     const batchId = req.params.batchId;
-    const deletedGroupRules = await fypGroupRulesService.deleteFYPGroupRules(String(batchId));
+    const deletedGroupRules = await fypGroupRulesService.deleteFYPGroupRules(
+      String(batchId)
+    );
 
     if (!deletedGroupRules) {
       return res.status(404).json({

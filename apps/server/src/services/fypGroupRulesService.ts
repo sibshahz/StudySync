@@ -12,19 +12,17 @@ export const getAllFYPGroupRules = async (orgId: string) => {
         },
       },
     });
-    
-    const groupRules = departments.flatMap((dept) =>
-      dept.batches
-        .filter((batch) => batch.FYPGroupRules)
-        .map((batch) => ({
-          ...batch.FYPGroupRules,
-          batchName: batch.name,
-          batchId: batch.id,
-          departmentName: dept.name,
-          departmentId: dept.id,
-        }))
+
+    const groupRules = departments.flatMap((department) =>
+      department.batches.map((batch) => ({
+        ...batch.FYPGroupRules,
+        batchId: batch.id,
+        batchName: batch.name,
+        departmentId: department.id,
+        departmentName: department.name,
+      }))
     );
-    
+
     return groupRules;
   } catch (error) {
     console.error("Failed to fetch FYP group rules:", error);
@@ -91,11 +89,11 @@ export const updateFYPGroupRules = async (
     const updateData: any = {
       updatedAt: new Date(),
     };
-    
+
     if (minMembers !== undefined) {
       updateData.minMembers = minMembers;
     }
-    
+
     if (maxMembers !== undefined) {
       updateData.maxMembers = maxMembers;
     }

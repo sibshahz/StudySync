@@ -113,6 +113,29 @@ export interface FYPProject {
   updatedAt: Date;
 }
 
+// FYPGroupRules type based on Prisma schema
+export interface FYPGroupRules {
+  id: number;
+  batchId: number;
+  minMembers: number;
+  maxMembers: number;
+  createdAt: Date;
+  updatedAt: Date;
+  batchName?: string;
+  departmentName?: string;
+  departmentId?: number;
+  batch?: {
+    id: number;
+    name: string;
+    batchCode: string;
+    batchYear: number;
+    department: {
+      id: number;
+      name: string;
+    };
+  };
+}
+
 // Zod schemas for Organization validation
 export const createOrganizationSchema = z.object({
   name: z
@@ -309,6 +332,54 @@ export const editBatchSchema = z.object({
   departmentId: z.number().min(1, "Department is required"),
 });
 
+// Zod schemas for FYPGroupRules validation
+export const createFYPGroupRulesSchema = z.object({
+  batchId: z.number().min(1, "Batch is required"),
+  minMembers: z
+    .number()
+    .int()
+    .min(1, "Minimum members must be at least 1")
+    .max(10, "Minimum members cannot exceed 10")
+    .default(1),
+  maxMembers: z
+    .number()
+    .int()
+    .min(1, "Maximum members must be at least 1")
+    .max(10, "Maximum members cannot exceed 10")
+    .default(4),
+})
+.refine(
+  (data) => data.minMembers <= data.maxMembers,
+  {
+    message: "Minimum members cannot be greater than maximum members",
+    path: ["minMembers"],
+  }
+);
+
+export const editFYPGroupRulesSchema = z.object({
+  id: z.number().optional(),
+  batchId: z.number().min(1, "Batch is required"),
+  minMembers: z
+    .number()
+    .int()
+    .min(1, "Minimum members must be at least 1")
+    .max(10, "Minimum members cannot exceed 10")
+    .default(1),
+  maxMembers: z
+    .number()
+    .int()
+    .min(1, "Maximum members must be at least 1")
+    .max(10, "Maximum members cannot exceed 10")
+    .default(4),
+})
+.refine(
+  (data) => data.minMembers <= data.maxMembers,
+  {
+    message: "Minimum members cannot be greater than maximum members",
+    path: ["minMembers"],
+  }
+);
+
 export type CreateOrganizationInput = z.infer<typeof createOrganizationSchema>;
 export type EditOrganizationInput = z.infer<typeof editOrganizationSchema>;
 export type CreateJoinCodeInput = z.infer<typeof createJoinCodeSchema>;
@@ -322,6 +393,8 @@ export type CreateDepartmentInput = z.infer<typeof createDepartmentSchema>;
 export type EditDepartmentInput = z.infer<typeof editDepartmentSchema>;
 export type CreateBatchInput = z.infer<typeof createBatchSchema>;
 export type EditBatchInput = z.infer<typeof editBatchSchema>;
+export type CreateFYPGroupRulesInput = z.infer<typeof createFYPGroupRulesSchema>;
+export type EditFYPGroupRulesInput = z.infer<typeof editFYPGroupRulesSchema>;
 
 // Helper function to generate unique join codes
 export function generateJoinCode(): string {
