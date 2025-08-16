@@ -56,6 +56,18 @@ export const jwtUtils = {
   },
 };
 
+// Helper function to normalize API responses
+const normalizeAuthResponse = (data: any): AuthResponse => {
+  // Handle cases where response is nested in a 'data' property
+  const responseData = data.data || data;
+
+  return {
+    user: responseData.user,
+    token: responseData.token,
+    refreshToken: responseData.refreshToken,
+  };
+};
+
 // API utilities
 export const authAPI = {
   login: async (credentials: {
@@ -78,7 +90,7 @@ export const authAPI = {
 
     const data = await response.json();
     console.log("LOGIN API RAW RESPONSE:", data);
-    return data;
+    return normalizeAuthResponse(data);
   },
 
   signup: async (credentials: {
@@ -103,7 +115,7 @@ export const authAPI = {
 
     const data = await response.json();
     console.log("*** SIGNUP RESPONSE IS: ", data);
-    return data.data;
+    return normalizeAuthResponse(data);
   },
 
   refreshToken: async (
@@ -124,7 +136,14 @@ export const authAPI = {
     }
 
     const data = await response.json();
-    return data;
+
+    // Handle nested response structure
+    const responseData = data.data || data;
+
+    return {
+      token: responseData.token,
+      refreshToken: responseData.refreshToken,
+    };
   },
 
   getProfile: async (token: string): Promise<User> => {
@@ -143,7 +162,9 @@ export const authAPI = {
 
     const data = await response.json();
     console.log("*** GET PROFILE RESPONSE IS: ", data);
-    return data.data;
+
+    // Handle nested response structure
+    return data.data || data;
   },
 
   logout: async (token: string): Promise<void> => {

@@ -5,6 +5,7 @@ import {
   useContext,
   useReducer,
   useEffect,
+  useCallback,
   type ReactNode,
 } from "react";
 import type {
@@ -77,33 +78,40 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Initialize auth state on mount
-  useEffect(() => {
-    initializeAuth();
+  // Wrap refreshAuth in useCallback to prevent infinite loops
+  const refreshAuth = useCallback(async () => {
+    try {
+      const refreshToken = tokenStorage.getRefreshToken();
+      if (!refreshToken) {
+        throw new Error("No refresh token available");
+      }
+
+      const response = await authAPI.refreshToken(refreshToken);
+
+      tokenStorage.setToken(response.token);
+      tokenStorage.setRefreshToken(response.refreshToken);
+
+      dispatch({
+        type: "UPDATE_TOKEN",
+        payload: {
+          token: response.token,
+          refreshToken: response.refreshToken,
+        },
+      });
+    } catch (error) {
+      console.error("Token refresh failed:", error);
+      tokenStorage.removeTokens();
+      dispatch({ type: "CLEAR_USER" });
+      throw error;
+    }
   }, []);
 
-  // Auto refresh token
-  useEffect(() => {
-    if (state.token && !jwtUtils.isTokenExpired(state.token)) {
-      const payload = jwtUtils.getTokenPayload(state.token);
-      const timeUntilExpiry = payload.exp * 1000 - Date.now();
-      const refreshTime = Math.max(timeUntilExpiry - 60000, 30000); // Refresh 1 minute before expiry, minimum 30 seconds
-
-      const timer = setTimeout(() => {
-        refreshAuth();
-      }, refreshTime);
-
-      return () => clearTimeout(timer);
-    }
-  }, [state.token]);
-
-  const initializeAuth = async () => {
+  const initializeAuth = useCallback(async () => {
     try {
       const token = tokenStorage.getToken();
       const refreshToken = tokenStorage.getRefreshToken();
 
       if (!token || !refreshToken) {
-        // instead of nuking everything, just mark loading as false
         dispatch({ type: "SET_LOADING", payload: false });
         return;
       }
@@ -116,11 +124,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error("Auth initialization failed:", error);
-      // careful: don’t wipe storage unless you’re sure
       tokenStorage.removeTokens();
       dispatch({ type: "CLEAR_USER" });
     }
-  };
+  }, [refreshAuth]);
+
+  // Initialize auth state on mount
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
+
+  // Auto refresh token
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+
+    if (state.token && !jwtUtils.isTokenExpired(state.token)) {
+      const payload = jwtUtils.getTokenPayload(state.token);
+      if (payload?.exp) {
+        const timeUntilExpiry = payload.exp * 1000 - Date.now();
+        const refreshTime = Math.max(timeUntilExpiry - 60000, 30000); // Refresh 1 minute before expiry, minimum 30 seconds
+
+        timer = setTimeout(() => {
+          refreshAuth().catch((error) => {
+            console.error("Auto refresh failed:", error);
+          });
+        }, refreshTime);
+      }
+    }
+
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
+  }, [state.token, refreshAuth]);
 
   const login = async (credentials: LoginCredentials) => {
     try {
@@ -141,7 +178,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           refreshToken: response.refreshToken,
         },
       });
-      dispatch({ type: "SET_LOADING", payload: false });
     } catch (error) {
       // Clear any partial state on error
       tokenStorage.removeTokens();
@@ -186,33 +222,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       tokenStorage.removeTokens();
       dispatch({ type: "CLEAR_USER" });
-    }
-  };
-
-  const refreshAuth = async () => {
-    try {
-      const refreshToken = tokenStorage.getRefreshToken();
-      if (!refreshToken) {
-        throw new Error("No refresh token available");
-      }
-
-      const response = await authAPI.refreshToken(refreshToken);
-
-      tokenStorage.setToken(response.data.token);
-      tokenStorage.setRefreshToken(response.data.refreshToken);
-
-      dispatch({
-        type: "UPDATE_TOKEN",
-        payload: {
-          token: response.data.token,
-          refreshToken: response.data.refreshToken,
-        },
-      });
-    } catch (error) {
-      console.error("Token refresh failed:", error);
-      tokenStorage.removeTokens();
-      dispatch({ type: "CLEAR_USER" });
-      throw error;
     }
   };
 
