@@ -103,7 +103,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const refreshToken = tokenStorage.getRefreshToken();
 
       if (!token || !refreshToken) {
-        dispatch({ type: "CLEAR_USER" });
+        // instead of nuking everything, just mark loading as false
+        dispatch({ type: "SET_LOADING", payload: false });
         return;
       }
 
@@ -115,6 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error("Auth initialization failed:", error);
+      // careful: don’t wipe storage unless you’re sure
       tokenStorage.removeTokens();
       dispatch({ type: "CLEAR_USER" });
     }

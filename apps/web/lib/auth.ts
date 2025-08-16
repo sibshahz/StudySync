@@ -77,7 +77,7 @@ export const authAPI = {
     }
 
     const data = await response.json();
-
+    console.log("LOGIN API RAW RESPONSE:", data);
     return data.data;
   },
 
@@ -131,16 +131,16 @@ export const authAPI = {
     const response = await fetch(`${API_BASE_URL}/auth/profile`, {
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       credentials: "include",
     });
-    
+
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message || "Failed to get profile");
     }
-    
+
     const data = await response.json();
     return data.data;
   },
