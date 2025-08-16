@@ -30,6 +30,7 @@ export default function SignInForm() {
 
   // Handle navigation after successful authentication
   useEffect(() => {
+    console.log("Auth state:", { isAuthenticated, isLoading, user });
     if (!isLoading && isAuthenticated && user) {
       const roles = user.roles || [];
       setIsRedirecting(true); // 👈 show overlay only now

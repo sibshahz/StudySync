@@ -124,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       dispatch({ type: "SET_LOADING", payload: true });
       const response = await authAPI.login(credentials);
-      
+
       // Store tokens first
       tokenStorage.setToken(response.token);
       tokenStorage.setRefreshToken(response.refreshToken);
@@ -138,6 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           refreshToken: response.refreshToken,
         },
       });
+      dispatch({ type: "SET_LOADING", payload: false });
     } catch (error) {
       // Clear any partial state on error
       tokenStorage.removeTokens();
@@ -150,7 +151,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       dispatch({ type: "SET_LOADING", payload: true });
       const response = await authAPI.signup(credentials);
-      
+
       // Store tokens first
       tokenStorage.setToken(response.token);
       tokenStorage.setRefreshToken(response.refreshToken);
