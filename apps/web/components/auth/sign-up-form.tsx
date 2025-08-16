@@ -35,7 +35,6 @@ export default function SignUpForm() {
   const router = useRouter();
   useEffect(() => {
     if (!isLoading && isAuthenticated && user) {
-      setIsRedirecting(true);
       const roles = user.roles || [];
 
       let destination = "/dashboard";
