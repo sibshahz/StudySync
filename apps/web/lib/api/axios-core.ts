@@ -5,7 +5,7 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/v1";
 
 // Create instance
-const axios_default = axios.create({
+export const axios_default = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true, // send cookies along with requests
   headers: {
@@ -80,5 +80,3 @@ axios_default.interceptors.response.use(
     return Promise.reject(error);
   },
 );
-
-export default axios_default;

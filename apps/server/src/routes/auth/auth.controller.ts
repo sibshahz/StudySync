@@ -25,18 +25,37 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   try {
     const result = await authService.login(req.body);
-    res.setHeader("Set-Cookie", [
-      `token=${result.token}; HttpOnly; Path=/; Secure; Max-Age=900`,
-      `refreshToken=${result.refreshToken}; HttpOnly; Path=/; Secure; Max-Age=604800`,
-    ]);
+
+    // Access token cookie
+    res.cookie("token", result.token, {
+      httpOnly: true,
+      secure: true, // must be true for cross-site cookies
+      sameSite: "none", // allow cross-site
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 15 min
+    });
+
+    res.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
 
     res.status(200).json({
       success: true,
       message: "Login successful",
-      data: result,
+
+      token: result.token,
+      refreshToken: result.refreshToken,
+
+      user: result.user,
     });
+    return;
   } catch (error: any) {
     res.status(401).json({ success: false, message: error.message });
+    return;
   }
 };
 

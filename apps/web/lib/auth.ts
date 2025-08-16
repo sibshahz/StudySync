@@ -78,7 +78,7 @@ export const authAPI = {
 
     const data = await response.json();
     console.log("LOGIN API RAW RESPONSE:", data);
-    return data.data;
+    return data;
   },
 
   signup: async (credentials: {
@@ -124,7 +124,7 @@ export const authAPI = {
     }
 
     const data = await response.json();
-    return data.data;
+    return data;
   },
 
   getProfile: async (token: string): Promise<User> => {
@@ -142,6 +142,7 @@ export const authAPI = {
     }
 
     const data = await response.json();
+    console.log("*** GET PROFILE RESPONSE IS: ", data);
     return data.data;
   },
 

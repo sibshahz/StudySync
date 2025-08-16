@@ -198,14 +198,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const response = await authAPI.refreshToken(refreshToken);
 
-      tokenStorage.setToken(response.token);
-      tokenStorage.setRefreshToken(response.refreshToken);
+      tokenStorage.setToken(response.data.token);
+      tokenStorage.setRefreshToken(response.data.refreshToken);
 
       dispatch({
         type: "UPDATE_TOKEN",
         payload: {
-          token: response.token,
-          refreshToken: response.refreshToken,
+          token: response.data.token,
+          refreshToken: response.data.refreshToken,
         },
       });
     } catch (error) {
