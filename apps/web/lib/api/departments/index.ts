@@ -1,4 +1,4 @@
-import axios_default from "../axios-core";
+import { axios_default } from "../axios-core";
 
 export const getDepartments = async (orgId: string) => {
   try {

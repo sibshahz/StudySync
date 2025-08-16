@@ -249,7 +249,7 @@ export function CreateBatch({ onBatchCreated }: CreateBatchProps) {
                             key={department.id}
                             value={department.id.toString()}
                           >
-                            {department.departmentName}
+                            {department.name}
                           </SelectItem>
                         ))
                       )}

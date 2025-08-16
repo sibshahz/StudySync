@@ -344,9 +344,7 @@ export function ListDepartments({ refreshTrigger }: ListDepartmentsProps) {
                     <TableRow key={department.id}>
                       <TableCell>
                         <div className="space-y-1">
-                          <p className="font-medium">
-                            {department.departmentName}
-                          </p>
+                          <p className="font-medium">{department.name}</p>
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Building2 className="h-3 w-3" />
                             ID: {department.id}

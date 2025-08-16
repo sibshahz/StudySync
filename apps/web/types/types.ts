@@ -76,6 +76,20 @@ export interface BatchEntity {
   fypGroupsCount?: number;
 }
 
+// Student type - filtered from Member with only STUDENT role
+export interface Student {
+  id: number;
+  email: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  status: Status;
+  department?: Department;
+  batch?: Batch;
+  studentId?: string;
+  enrollmentYear?: number;
+}
+
 // Member type based on API response
 export interface Member {
   id: number;
@@ -377,6 +391,35 @@ export const editFYPGroupRulesSchema = z
     path: ["minMembers"],
   });
 
+// Zod schemas for Student operations
+export const assignStudentDepartmentSchema = z.object({
+  studentIds: z
+    .array(z.number())
+    .min(1, "At least one student must be selected"),
+  department: z.nativeEnum(Department, "Please select a valid department"),
+});
+
+export const assignStudentBatchSchema = z.object({
+  studentIds: z
+    .array(z.number())
+    .min(1, "At least one student must be selected"),
+  batch: z.nativeEnum(Batch, "Please select a valid batch"),
+});
+
+export const promoteStudentsSchema = z.object({
+  studentIds: z
+    .array(z.number())
+    .min(1, "At least one student must be selected"),
+  newBatch: z.nativeEnum(Batch, "Please select a valid batch/semester"),
+});
+
+export const updateStudentStatusSchema = z.object({
+  studentIds: z
+    .array(z.number())
+    .min(1, "At least one student must be selected"),
+  status: z.nativeEnum(Status, "Please select a valid status"),
+});
+
 export type CreateOrganizationInput = z.infer<typeof createOrganizationSchema>;
 export type EditOrganizationInput = z.infer<typeof editOrganizationSchema>;
 export type CreateJoinCodeInput = z.infer<typeof createJoinCodeSchema>;
@@ -394,6 +437,14 @@ export type CreateFYPGroupRulesInput = z.infer<
   typeof createFYPGroupRulesSchema
 >;
 export type EditFYPGroupRulesInput = z.infer<typeof editFYPGroupRulesSchema>;
+export type AssignStudentDepartmentInput = z.infer<
+  typeof assignStudentDepartmentSchema
+>;
+export type AssignStudentBatchInput = z.infer<typeof assignStudentBatchSchema>;
+export type PromoteStudentsInput = z.infer<typeof promoteStudentsSchema>;
+export type UpdateStudentStatusInput = z.infer<
+  typeof updateStudentStatusSchema
+>;
 
 // Helper function to generate unique join codes
 export function generateJoinCode(): string {

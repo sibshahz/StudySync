@@ -1,4 +1,4 @@
-import axios_default from "../axios-core";
+import { axios_default } from "../axios-core";
 import type {
   CreateBatchInput,
   EditBatchInput,

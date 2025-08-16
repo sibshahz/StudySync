@@ -32,7 +32,6 @@ export default function SignUpForm() {
   });
   const [error, setError] = useState("");
   // const { signup, isLoading } = useAuth();
-  const router = useRouter();
   useEffect(() => {
     if (!isLoading && isAuthenticated && user) {
       const roles = user.roles || [];

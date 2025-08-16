@@ -72,6 +72,8 @@ import { Role, Status, Department, Batch } from "@/types/types"; // Import missi
 import { deleteOrgMembers, getAllOrgMembers } from "@/lib/api/members";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store/store";
+import { AssignMemberBatch } from "./assign-member-batch";
+import { AssignMemberDept } from "./assign-member-dept";
 
 interface ListMembersProps {
   refreshTrigger?: number;
@@ -344,13 +346,29 @@ export function ListMembers({ refreshTrigger }: ListMembersProps) {
                 {filteredMembers.length} Members
               </Badge>
               {selectedMembers.length > 0 && (
-                <PromoteMembers
-                  selectedMembers={selectedMemberObjects}
-                  onPromotionComplete={() => {
-                    fetchMembers();
-                    setSelectedMembers([]);
-                  }}
-                />
+                <>
+                  <PromoteMembers
+                    selectedMembers={selectedMemberObjects}
+                    onPromotionComplete={() => {
+                      fetchMembers();
+                      setSelectedMembers([]);
+                    }}
+                  />
+                  <AssignMemberBatch
+                    selectedMembers={selectedMemberObjects}
+                    onPromotionComplete={() => {
+                      fetchMembers();
+                      setSelectedMembers([]);
+                    }}
+                  />
+                  <AssignMemberDept
+                    selectedMembers={selectedMemberObjects}
+                    onPromotionComplete={() => {
+                      fetchMembers();
+                      setSelectedMembers([]);
+                    }}
+                  />
+                </>
               )}
             </div>
           </div>
