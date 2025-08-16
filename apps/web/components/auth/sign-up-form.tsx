@@ -20,6 +20,8 @@ import {
 import { useAuth } from "@/contexts/auth-context";
 
 export default function SignUpForm() {
+  const { login, isLoading, user, isAuthenticated } = useAuth();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -46,6 +48,20 @@ export default function SignUpForm() {
     //   return;
     // }
 
+    useEffect(() => {
+      if (!isLoading && isAuthenticated && user) {
+        setIsRedirecting(true);
+        const roles = user.roles || [];
+
+        let destination = "/dashboard";
+        if (roles.includes("TEACHER")) destination = "/dashboard-teacher";
+        if (roles.includes("STUDENT")) destination = "/lms";
+
+        // full reload ensures cookies are used
+        window.location.href = destination;
+      }
+    }, [isAuthenticated, user, isLoading]);
+
     try {
       const response = await signup({
         name: formData.name,
@@ -55,7 +71,7 @@ export default function SignUpForm() {
       });
       console.log("***Signup response:", response);
 
-      router.push("/dashboard");
+      // router.push("/dashboard");
     } catch (err) {
       // console.log("***Signup error:", err);
       setError(err instanceof Error ? err.message : "Signup failed");
