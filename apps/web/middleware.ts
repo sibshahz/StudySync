@@ -18,14 +18,15 @@ const protectedRoutes: Record<string, string[]> = {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // 🔍 Match route
   const matchedRoute = Object.keys(protectedRoutes).find((route) =>
     pathname.startsWith(route),
   );
-
   if (!matchedRoute) return NextResponse.next();
 
   const requiredRoles = protectedRoutes[matchedRoute];
 
+  // ✅ Get token either from cookie or Authorization header
   const cookieToken = request.cookies.get("token")?.value;
   const authHeader = request.headers.get("authorization");
   const headerToken = authHeader?.startsWith("Bearer ")
@@ -35,11 +36,13 @@ export async function middleware(request: NextRequest) {
   const token = cookieToken || headerToken;
 
   if (!token) {
-    console.log("*** TOKEN NOT FOUND: ", token);
+    console.warn("[AUTH MIDDLEWARE] ❌ No authHeader or ", authHeader);
+    console.warn("[AUTH MIDDLEWARE] ❌ Token not found", token);
     return NextResponse.redirect(new URL("/signin", request.url));
   }
 
   try {
+    // ✅ Verify token
     const { payload }: { payload: JWTPayload } = await jwtVerify(
       token,
       secret,
@@ -49,15 +52,31 @@ export async function middleware(request: NextRequest) {
       },
     );
 
-    const userRole = payload.role as string;
+    // 🔍 Normalize roles
+    const userRoles = Array.isArray(payload.role)
+      ? payload.role
+      : payload.role
+        ? [payload.role]
+        : [];
 
-    if (!requiredRoles?.includes(userRole)) {
+    console.log("[AUTH MIDDLEWARE] ✅ Verified user:", {
+      sub: payload.sub,
+      roles: userRoles,
+    });
+
+    // ✅ Role check
+    const hasAccess = requiredRoles.some((r) => userRoles.includes(r));
+    if (!hasAccess) {
+      console.warn("[AUTH MIDDLEWARE] ❌ Role not allowed", {
+        requiredRoles,
+        userRoles,
+      });
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
 
     return NextResponse.next();
   } catch (err) {
-    console.error("JWT verification failed:", err);
+    console.error("[AUTH MIDDLEWARE] ❌ JWT verification failed:", err);
     return NextResponse.redirect(new URL("/signin", request.url));
   }
 }
