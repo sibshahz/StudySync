@@ -22,12 +22,11 @@ export async function middleware(request: NextRequest) {
   const matchedRoute = Object.keys(protectedRoutes).find((route) =>
     pathname.startsWith(route),
   );
-
   if (!matchedRoute) return NextResponse.next();
 
   const requiredRoles = protectedRoutes[matchedRoute];
 
-  // 🔍 Grab token from cookie or header
+  // ✅ Get token either from cookie or Authorization header
   const cookieToken = request.cookies.get("token")?.value;
   const authHeader = request.headers.get("authorization");
   const headerToken = authHeader?.startsWith("Bearer ")
@@ -35,13 +34,14 @@ export async function middleware(request: NextRequest) {
     : undefined;
 
   const token = cookieToken || headerToken;
-  // @todo: Handle missing token
-  // if (!token) {
-  //   console.warn("[AUTH MIDDLEWARE] ❌ Token not found");
-  //   return NextResponse.redirect(new URL("/signin", request.url));
-  // }
+
+  if (!token) {
+    console.warn("[AUTH MIDDLEWARE] ❌ Token not found", token);
+    return NextResponse.redirect(new URL("/signin", request.url));
+  }
 
   try {
+    // ✅ Verify token
     const { payload }: { payload: JWTPayload } = await jwtVerify(
       token,
       secret,
@@ -51,7 +51,7 @@ export async function middleware(request: NextRequest) {
       },
     );
 
-    // 🔍 Normalize role(s) to an array
+    // 🔍 Normalize roles
     const userRoles = Array.isArray(payload.role)
       ? payload.role
       : payload.role
@@ -63,7 +63,7 @@ export async function middleware(request: NextRequest) {
       roles: userRoles,
     });
 
-    // 🔍 Check access
+    // ✅ Role check
     const hasAccess = requiredRoles.some((r) => userRoles.includes(r));
     if (!hasAccess) {
       console.warn("[AUTH MIDDLEWARE] ❌ Role not allowed", {
