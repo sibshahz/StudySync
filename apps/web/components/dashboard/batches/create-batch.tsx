@@ -50,9 +50,11 @@ export function CreateBatch({ onBatchCreated }: CreateBatchProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [departments, setDepartments] = useState<DepartmentEntity[]>([]);
   const [loadingDepartments, setLoadingDepartments] = useState(true);
-  
+
   // Get selected organization from Redux store
-  const selectedOrganization = useSelector((state: RootState) => state.organizations.selectedOrganization);
+  const selectedOrganization = useSelector(
+    (state: RootState) => state.organizations.selectedOrganization,
+  );
 
   const form = useForm<CreateBatchInput>({
     resolver: zodResolver(createBatchSchema),
@@ -75,7 +77,9 @@ export function CreateBatch({ onBatchCreated }: CreateBatchProps) {
 
       setLoadingDepartments(true);
       try {
-        const fetchedDepartments = await getDepartments(selectedOrganization.id.toString());
+        const fetchedDepartments = await getDepartments(
+          selectedOrganization.id.toString(),
+        );
         setDepartments(fetchedDepartments || []);
       } catch (error) {
         console.error("Error fetching departments:", error);
@@ -112,7 +116,9 @@ export function CreateBatch({ onBatchCreated }: CreateBatchProps) {
       onBatchCreated();
     } catch (error: any) {
       toast("Error creating batch", {
-        description: error?.response?.data?.message || "There was a problem creating the batch. Please try again.",
+        description:
+          error?.response?.data?.message ||
+          "There was a problem creating the batch. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -124,11 +130,9 @@ export function CreateBatch({ onBatchCreated }: CreateBatchProps) {
     const batchYear = form.getValues("batchYear");
 
     if (selectedDepartmentId && batchYear) {
-      const department = departments.find(
-        (d) => d.id === selectedDepartmentId,
-      );
+      const department = departments.find((d) => d.id === selectedDepartmentId);
       if (department) {
-        const deptCode = department.name
+        const deptCode = department.departmentName
           .split(" ")
           .map((word) => word[0])
           .join("")
@@ -229,11 +233,15 @@ export function CreateBatch({ onBatchCreated }: CreateBatchProps) {
                       {loadingDepartments ? (
                         <div className="flex items-center justify-center p-2">
                           <Loader2 className="h-4 w-4 animate-spin" />
-                          <span className="ml-2 text-sm">Loading departments...</span>
+                          <span className="ml-2 text-sm">
+                            Loading departments...
+                          </span>
                         </div>
                       ) : departments.length === 0 ? (
                         <div className="p-2 text-sm text-muted-foreground text-center">
-                          {selectedOrganization ? "No departments found" : "Please select an organization first"}
+                          {selectedOrganization
+                            ? "No departments found"
+                            : "Please select an organization first"}
                         </div>
                       ) : (
                         departments.map((department) => (
@@ -241,7 +249,7 @@ export function CreateBatch({ onBatchCreated }: CreateBatchProps) {
                             key={department.id}
                             value={department.id.toString()}
                           >
-                            {department.name}
+                            {department.departmentName}
                           </SelectItem>
                         ))
                       )}

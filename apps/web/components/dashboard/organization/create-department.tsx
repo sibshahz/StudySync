@@ -40,6 +40,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/lib/store/store";
 import { createDepartment } from "@/lib/api/departments";
+import { UserOrganization } from "@/lib/store/common/orgsSlice";
 
 interface CreateDepartmentProps {
   onDepartmentCreated?: () => void;
@@ -50,7 +51,7 @@ export function CreateDepartment({
 }: CreateDepartmentProps) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [organizations, setOrganizations] = useState<UserOrganization[]>([]);
 
   const dispatch = useDispatch<AppDispatch>();
   const selectedOrganization = useSelector(
@@ -96,10 +97,11 @@ export function CreateDepartment({
     // Fetch organizations
     if (userOrganizations.length > 0) {
       setOrganizations(userOrganizations);
-    } else {
-      // Fallback to mock data if no organizations are available
-      setOrganizations(mockOrganizations);
     }
+    // } else {
+    //   // Fallback to mock data if no organizations are available
+    //   setOrganizations(mockOrganizations);
+    // }
   }, []);
 
   async function onSubmit(values: CreateDepartmentInput) {

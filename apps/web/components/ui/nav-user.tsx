@@ -25,9 +25,12 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useAuth, User } from "./auth-provider";
-import { postLogout } from "@/lib/api/auth";
+// import { useAuth, User } from "./auth-provider";
+import { useAuth } from "@/contexts/auth-context";
+// import { postLogout } from "@/lib/api/auth";
+// import {postLogout} from "@/lib/api/"
 import { useRouter } from "next/navigation";
+import { log } from "console";
 export function NavUser({
   user,
 }: {
@@ -39,11 +42,12 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
+  // const { setUser } = useAuth();
+  const { logout } = useAuth();
   const handleLogout = async () => {
-    await postLogout();
-    const { setUser } = useAuth();
-    setUser(null);
+    // setUser(null);
     // Redirect to the sign-in page after logout
+    logout();
     router.push("/login");
   };
   return (

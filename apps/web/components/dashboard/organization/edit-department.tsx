@@ -59,7 +59,7 @@ export function EditDepartment({
     resolver: zodResolver(editDepartmentSchema),
     defaultValues: {
       id: department.id,
-      name: department.name,
+      name: department.departmentName,
       organizationId: department.organizationId,
     },
   });
@@ -95,7 +95,7 @@ export function EditDepartment({
   useEffect(() => {
     form.reset({
       id: department.id,
-      name: department.name,
+      name: department.departmentName,
       organizationId: department.organizationId,
     });
   }, [department, form]);

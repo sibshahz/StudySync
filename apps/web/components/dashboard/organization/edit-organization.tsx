@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useEffect } from "react";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -55,7 +57,7 @@ export function EditOrganization({
   });
 
   // Reset form when organization changes
-  useState(() => {
+  useEffect(() => {
     form.reset({
       id: organization.id,
       name: organization.name,

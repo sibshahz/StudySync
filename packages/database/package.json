@@ -1,16 +1,17 @@
 {
   "name": "@repo/database",
   "version": "0.0.1",
-    "exports": {
-  ".": "./src/client.ts",
-  "./enums": "./src/enums.ts"
+  "exports": {
+    ".": "./src/client.ts",
+    "./enums": "./src/enums.ts"
   },
   "scripts": {
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev --skip-generate",
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
-    "db:seed": "node prisma/seed.js"
+    "db:seed": "node prisma/seed.js",
+    "build": "npm run db:generate && tsc"
   },
   "devDependencies": {
     "@types/node": "^24.0.14",
