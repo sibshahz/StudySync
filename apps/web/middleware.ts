@@ -36,6 +36,7 @@ export async function middleware(request: NextRequest) {
   const token = cookieToken || headerToken;
 
   if (!token) {
+    console.warn("[AUTH MIDDLEWARE] ❌ No authHeader or ", authHeader);
     console.warn("[AUTH MIDDLEWARE] ❌ Token not found", token);
     return NextResponse.redirect(new URL("/signin", request.url));
   }
