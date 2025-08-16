@@ -20,7 +20,7 @@ import {
 import { useAuth } from "@/contexts/auth-context";
 
 export default function SignUpForm() {
-  const { login, isLoading, user, isAuthenticated } = useAuth();
+  const { isLoading, user, isAuthenticated, signup } = useAuth();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -31,7 +31,7 @@ export default function SignUpForm() {
     hasReferral: false,
   });
   const [error, setError] = useState("");
-  const { signup, isLoading } = useAuth();
+  // const { signup, isLoading } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
