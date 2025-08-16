@@ -30,22 +30,18 @@ export default function SignInForm() {
 
   // Handle navigation after successful authentication
   useEffect(() => {
-    console.log("Auth state:", { isAuthenticated, isLoading, user });
     if (!isLoading && isAuthenticated && user) {
+      setIsRedirecting(true);
       const roles = user.roles || [];
-      setIsRedirecting(true); // 👈 show overlay only now
 
-      if (roles.includes("ADMIN")) {
-        router.push("/dashboard");
-      } else if (roles.includes("TEACHER")) {
-        router.push("/dashboard-teacher");
-      } else if (roles.includes("STUDENT")) {
-        router.push("/lms");
-      } else {
-        router.push("/dashboard");
-      }
+      let destination = "/dashboard";
+      if (roles.includes("TEACHER")) destination = "/dashboard-teacher";
+      if (roles.includes("STUDENT")) destination = "/lms";
+
+      // full reload ensures cookies are used
+      window.location.href = destination;
     }
-  }, [isAuthenticated, user, isLoading, router]);
+  }, [isAuthenticated, user, isLoading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
