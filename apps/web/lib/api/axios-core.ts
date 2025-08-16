@@ -1,5 +1,6 @@
 // utils/axios.ts
 import axios, { AxiosError } from "axios";
+import { tokenStorage } from "../auth";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/v1";
@@ -16,8 +17,11 @@ export const axios_default = axios.create({
 // Request Interceptor
 axios_default.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
-
+    const token = tokenStorage.getToken();
+    if (!token) {
+      console.warn("[AXIOS INTERCEPTOR] ❌ No token found");
+      return config;
+    }
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
