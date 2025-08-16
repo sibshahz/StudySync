@@ -78,7 +78,7 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Wrap refreshAuth in useCallback to prevent infinite loops
+  // Refresh auth function
   const refreshAuth = useCallback(async () => {
     try {
       const refreshToken = tokenStorage.getRefreshToken();
@@ -98,78 +98,115 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           refreshToken: response.refreshToken,
         },
       });
+
+      return response.token;
     } catch (error) {
-      console.error("Token refresh failed:", error);
+      console.error("[AUTH CONTEXT] Token refresh failed:", error);
       tokenStorage.removeTokens();
       dispatch({ type: "CLEAR_USER" });
       throw error;
     }
   }, []);
 
+  // Initialize auth state
   const initializeAuth = useCallback(async () => {
     try {
+      dispatch({ type: "SET_LOADING", payload: true });
+
       const token = tokenStorage.getToken();
       const refreshToken = tokenStorage.getRefreshToken();
 
       if (!token || !refreshToken) {
+        console.log("[AUTH CONTEXT] No tokens found, user not authenticated");
         dispatch({ type: "SET_LOADING", payload: false });
         return;
       }
 
+      // Check if token is expired
       if (jwtUtils.isTokenExpired(token)) {
-        await refreshAuth();
+        console.log("[AUTH CONTEXT] Token expired, attempting refresh...");
+        try {
+          await refreshAuth();
+          // After successful refresh, get user profile with new token
+          const newToken = tokenStorage.getToken();
+          if (newToken) {
+            const user = await authAPI.getProfile(newToken);
+            dispatch({
+              type: "SET_USER",
+              payload: {
+                user,
+                token: newToken,
+                refreshToken: tokenStorage.getRefreshToken() || refreshToken,
+              },
+            });
+          }
+        } catch (refreshError) {
+          console.error(
+            "[AUTH CONTEXT] Failed to refresh during initialization:",
+            refreshError,
+          );
+          dispatch({ type: "CLEAR_USER" });
+        }
       } else {
-        const user = await authAPI.getProfile(token);
-        dispatch({ type: "SET_USER", payload: { user, token, refreshToken } });
+        // Token is valid, get user profile
+        try {
+          const user = await authAPI.getProfile(token);
+          dispatch({
+            type: "SET_USER",
+            payload: { user, token, refreshToken },
+          });
+        } catch (profileError) {
+          console.error("[AUTH CONTEXT] Failed to get profile:", profileError);
+          // Token might be invalid, try refresh
+          try {
+            await refreshAuth();
+            const newToken = tokenStorage.getToken();
+            if (newToken) {
+              const user = await authAPI.getProfile(newToken);
+              dispatch({
+                type: "SET_USER",
+                payload: {
+                  user,
+                  token: newToken,
+                  refreshToken: tokenStorage.getRefreshToken() || refreshToken,
+                },
+              });
+            }
+          } catch (fallbackError) {
+            console.error(
+              "[AUTH CONTEXT] All auth attempts failed:",
+              fallbackError,
+            );
+            tokenStorage.removeTokens();
+            dispatch({ type: "CLEAR_USER" });
+          }
+        }
       }
     } catch (error) {
-      console.error("Auth initialization failed:", error);
+      console.error("[AUTH CONTEXT] Auth initialization failed:", error);
       tokenStorage.removeTokens();
       dispatch({ type: "CLEAR_USER" });
     }
   }, [refreshAuth]);
 
-  // Initialize auth state on mount
+  // Initialize on mount
   useEffect(() => {
     initializeAuth();
   }, [initializeAuth]);
 
-  // Auto refresh token
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-
-    if (state.token && !jwtUtils.isTokenExpired(state.token)) {
-      const payload = jwtUtils.getTokenPayload(state.token);
-      if (payload?.exp) {
-        const timeUntilExpiry = payload.exp * 1000 - Date.now();
-        const refreshTime = Math.max(timeUntilExpiry - 60000, 30000); // Refresh 1 minute before expiry, minimum 30 seconds
-
-        timer = setTimeout(() => {
-          refreshAuth().catch((error) => {
-            console.error("Auto refresh failed:", error);
-          });
-        }, refreshTime);
-      }
-    }
-
-    return () => {
-      if (timer) {
-        clearTimeout(timer);
-      }
-    };
-  }, [state.token, refreshAuth]);
+  // REMOVED: Auto token refresh timer to prevent conflicts with API client
+  // The API client now handles token refresh automatically
 
   const login = async (credentials: LoginCredentials) => {
     try {
       dispatch({ type: "SET_LOADING", payload: true });
       const response = await authAPI.login(credentials);
-      console.log("Login response:", response);
 
-      // Store tokens first
+      // Store tokens
       tokenStorage.setToken(response.token);
       tokenStorage.setRefreshToken(response.refreshToken);
 
-      // Then update the auth state
+      // Update auth state
       dispatch({
         type: "SET_USER",
         payload: {
@@ -178,8 +215,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           refreshToken: response.refreshToken,
         },
       });
+
+      console.log("[AUTH CONTEXT] ✅ Login successful");
     } catch (error) {
-      // Clear any partial state on error
+      console.error("[AUTH CONTEXT] ❌ Login failed:", error);
       tokenStorage.removeTokens();
       dispatch({ type: "CLEAR_USER" });
       throw error;
@@ -191,11 +230,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       dispatch({ type: "SET_LOADING", payload: true });
       const response = await authAPI.signup(credentials);
 
-      // Store tokens first
+      // Store tokens
       tokenStorage.setToken(response.token);
       tokenStorage.setRefreshToken(response.refreshToken);
 
-      // Then update the auth state
+      // Update auth state
       dispatch({
         type: "SET_USER",
         payload: {
@@ -204,8 +243,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           refreshToken: response.refreshToken,
         },
       });
+
+      console.log("[AUTH CONTEXT] ✅ Signup successful");
     } catch (error) {
-      // Clear any partial state on error
+      console.error("[AUTH CONTEXT] ❌ Signup failed:", error);
       tokenStorage.removeTokens();
       dispatch({ type: "CLEAR_USER" });
       throw error;
@@ -217,8 +258,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (state.token) {
         await authAPI.logout(state.token);
       }
+      console.log("[AUTH CONTEXT] ✅ Logout successful");
     } catch (error) {
-      console.error("Logout error:", error);
+      console.error("[AUTH CONTEXT] ❌ Logout error:", error);
+      // Continue with logout even if API call fails
     } finally {
       tokenStorage.removeTokens();
       dispatch({ type: "CLEAR_USER" });
