@@ -33,7 +33,19 @@ export default function SignUpForm() {
   const [error, setError] = useState("");
   // const { signup, isLoading } = useAuth();
   const router = useRouter();
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && user) {
+      setIsRedirecting(true);
+      const roles = user.roles || [];
 
+      let destination = "/dashboard";
+      if (roles.includes("TEACHER")) destination = "/dashboard-teacher";
+      if (roles.includes("STUDENT")) destination = "/lms";
+
+      // full reload ensures cookies are used
+      window.location.href = destination;
+    }
+  }, [isAuthenticated, user, isLoading]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -47,20 +59,6 @@ export default function SignUpForm() {
     //   setError("Referral code is required");
     //   return;
     // }
-
-    useEffect(() => {
-      if (!isLoading && isAuthenticated && user) {
-        setIsRedirecting(true);
-        const roles = user.roles || [];
-
-        let destination = "/dashboard";
-        if (roles.includes("TEACHER")) destination = "/dashboard-teacher";
-        if (roles.includes("STUDENT")) destination = "/lms";
-
-        // full reload ensures cookies are used
-        window.location.href = destination;
-      }
-    }, [isAuthenticated, user, isLoading]);
 
     try {
       const response = await signup({
