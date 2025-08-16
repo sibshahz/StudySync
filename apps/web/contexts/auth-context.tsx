@@ -124,6 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       dispatch({ type: "SET_LOADING", payload: true });
       const response = await authAPI.login(credentials);
+      console.log("Login response:", response);
 
       // Store tokens first
       tokenStorage.setToken(response.token);

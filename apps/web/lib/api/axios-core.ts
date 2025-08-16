@@ -1,46 +1,84 @@
-import axios from "axios";
+// utils/axios.ts
+import axios, { AxiosError } from "axios";
 
-export const axios_default = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/v1",
-  withCredentials: true, // Ensures cookies are sent with requests
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/v1";
+
+// Create instance
+const axios_default = axios.create({
+  baseURL: API_BASE_URL,
+  withCredentials: true, // send cookies along with requests
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Request interceptor to add authentication token
+// Request Interceptor
 axios_default.interceptors.request.use(
   (config) => {
-    // Add auth token from localStorage if it exists
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
+
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error),
 );
 
-// Response interceptor to handle responses and errors
+// Response Interceptor
 axios_default.interceptors.response.use(
-  function (response) {
-    // Any status code that lie within the range of 2xx cause this function to trigger
-    return response.data;
-  },
-  function (error) {
-    // Any status codes that falls outside the range of 2xx cause this function to trigger
-    if (error.response?.status === 401) {
-      // Token expired or unauthorized - redirect to login
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        window.location.href = '/signin';
+  (response) => response.data,
+  async (error: AxiosError) => {
+    const originalRequest = error.config as any;
+
+    // If unauthorized and we have a refresh token → try refreshing once
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry // prevent infinite loop
+    ) {
+      originalRequest._retry = true;
+
+      try {
+        const refreshToken = localStorage.getItem("refreshToken");
+
+        if (!refreshToken) {
+          throw new Error("No refresh token found");
+        }
+
+        // Call refresh endpoint
+        const res = await axios.post(
+          `${API_BASE_URL}/auth/refresh`,
+          { refreshToken },
+          { withCredentials: true },
+        );
+
+        const newAccessToken = res.data?.accessToken;
+        const newRefreshToken = res.data?.refreshToken;
+
+        if (newAccessToken) {
+          localStorage.setItem("token", newAccessToken);
+          if (newRefreshToken) {
+            localStorage.setItem("refreshToken", newRefreshToken);
+          }
+
+          // Update header & retry original request
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          return axios_default(originalRequest);
+        }
+      } catch (err) {
+        console.error("Token refresh failed:", err);
+        localStorage.removeItem("token");
+        localStorage.removeItem("refreshToken");
+        if (typeof window !== "undefined") {
+          window.location.href = "/signin";
+        }
       }
     }
+
     return Promise.reject(error);
-  }
+  },
 );
 
 export default axios_default;
