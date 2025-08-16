@@ -35,11 +35,11 @@ export async function middleware(request: NextRequest) {
     : undefined;
 
   const token = cookieToken || headerToken;
-
-  if (!token) {
-    console.warn("[AUTH MIDDLEWARE] ❌ Token not found");
-    return NextResponse.redirect(new URL("/signin", request.url));
-  }
+  // @todo: Handle missing token
+  // if (!token) {
+  //   console.warn("[AUTH MIDDLEWARE] ❌ Token not found");
+  //   return NextResponse.redirect(new URL("/signin", request.url));
+  // }
 
   try {
     const { payload }: { payload: JWTPayload } = await jwtVerify(
