@@ -86,3 +86,40 @@ export const deleteDepartment = async (orgId: string, deptId: string) => {
     console.error("Failed to delete department:", error);
   }
 };
+
+export const addDepartmentStudent = async (
+  orgId: string,
+  deptId: string,
+  students: { userId: number }[]
+) => {
+  try {
+    const [addedStudents, updatedDepartment] = await prisma.$transaction([
+      prisma.student.createMany({
+        data: students.map((student) => ({
+          userId: student.userId,
+          departmentId: Number(deptId),
+          batchId: null, // Assuming batchId is not provided in this context
+        })),
+        skipDuplicates: true, // Skip if the student already exists
+      }),
+
+      prisma.departments.update({
+        where: {
+          id: Number(deptId),
+          organizationId: Number(orgId),
+        },
+        data: {
+          students: {
+            connect: students.map((student) => ({
+              userId: student.userId,
+            })),
+          },
+        },
+      }),
+    ]);
+    return addedStudents;
+  } catch (error) {
+    console.error("Failed to add students to department:", error);
+    return null;
+  }
+};

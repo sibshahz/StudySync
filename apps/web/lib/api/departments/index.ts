@@ -42,3 +42,16 @@ export const deleteDepartment = async (id) => {
     return null;
   }
 };
+
+export const postStudentToDepartment = async (orgId, deptId, data) => {
+  try {
+    const response = await axios_default.post(
+      `/departments/${orgId}/${deptId}`,
+      data,
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Failed to assign student to department:", error);
+    return null;
+  }
+};

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { UserRole, SemesterSeason } from "@repo/database/enums";
 import { createBatch } from "@/services/batchService";
+import { add } from "@/_tests_/math";
 
 // Shared enums
 const userRoleEnum = z.nativeEnum(UserRole);
@@ -102,94 +103,97 @@ const validationSchemas = {
       .min(2, "Batch name must be at least 2 characters long")
       .max(50, "Batch name cannot exceed 50 characters"),
   }),
-  createSemester: z.object({
-    name: z
-      .string()
-      .min(2, "Semester name must be at least 2 characters long")
-      .max(100, "Semester name cannot exceed 100 characters"),
-    semesterSeason: semesterSeasonEnum,
-    startDate: z.coerce
-      .date()
-      .refine((date) => date >= new Date(), {
+  createSemester: z
+    .object({
+      name: z
+        .string()
+        .min(2, "Semester name must be at least 2 characters long")
+        .max(100, "Semester name cannot exceed 100 characters"),
+      semesterSeason: semesterSeasonEnum,
+      startDate: z.coerce.date().refine((date) => date >= new Date(), {
         message: "Start date must be today or in the future",
       }),
-    endDate: z.coerce.date(),
-  })
-  .refine(
-    (data) => data.endDate > data.startDate,
-    {
+      endDate: z.coerce.date(),
+    })
+    .refine((data) => data.endDate > data.startDate, {
       message: "End date must be after start date",
       path: ["endDate"],
-    }
-  ),
-  updateSemester: z.object({
-    name: z
-      .string()
-      .min(2, "Semester name must be at least 2 characters long")
-      .max(100, "Semester name cannot exceed 100 characters"),
-    semesterSeason: semesterSeasonEnum,
-    startDate: z.coerce.date(),
-    endDate: z.coerce.date(),
-  })
-  .refine(
-    (data) => data.endDate > data.startDate,
-    {
+    }),
+  updateSemester: z
+    .object({
+      name: z
+        .string()
+        .min(2, "Semester name must be at least 2 characters long")
+        .max(100, "Semester name cannot exceed 100 characters"),
+      semesterSeason: semesterSeasonEnum,
+      startDate: z.coerce.date(),
+      endDate: z.coerce.date(),
+    })
+    .refine((data) => data.endDate > data.startDate, {
       message: "End date must be after start date",
       path: ["endDate"],
-    }
-  ),
-  createFYPGroupRules: z.object({
-    minMembers: z
-      .number()
-      .int()
-      .min(1, "Minimum members must be at least 1")
-      .max(10, "Minimum members cannot exceed 10")
-      .optional(),
-    maxMembers: z
-      .number()
-      .int()
-      .min(1, "Maximum members must be at least 1")
-      .max(10, "Maximum members cannot exceed 10")
-      .optional(),
-  })
-  .refine(
-    (data) => {
-      if (data.minMembers && data.maxMembers) {
-        return data.minMembers <= data.maxMembers;
+    }),
+  createFYPGroupRules: z
+    .object({
+      minMembers: z
+        .number()
+        .int()
+        .min(1, "Minimum members must be at least 1")
+        .max(10, "Minimum members cannot exceed 10")
+        .optional(),
+      maxMembers: z
+        .number()
+        .int()
+        .min(1, "Maximum members must be at least 1")
+        .max(10, "Maximum members cannot exceed 10")
+        .optional(),
+    })
+    .refine(
+      (data) => {
+        if (data.minMembers && data.maxMembers) {
+          return data.minMembers <= data.maxMembers;
+        }
+        return true;
+      },
+      {
+        message: "Minimum members cannot be greater than maximum members",
+        path: ["minMembers"],
       }
-      return true;
-    },
-    {
-      message: "Minimum members cannot be greater than maximum members",
-      path: ["minMembers"],
-    }
-  ),
-  updateFYPGroupRules: z.object({
-    minMembers: z
-      .number()
-      .int()
-      .min(1, "Minimum members must be at least 1")
-      .max(10, "Minimum members cannot exceed 10")
-      .optional(),
-    maxMembers: z
-      .number()
-      .int()
-      .min(1, "Maximum members must be at least 1")
-      .max(10, "Maximum members cannot exceed 10")
-      .optional(),
-  })
-  .refine(
-    (data) => {
-      if (data.minMembers && data.maxMembers) {
-        return data.minMembers <= data.maxMembers;
+    ),
+  updateFYPGroupRules: z
+    .object({
+      minMembers: z
+        .number()
+        .int()
+        .min(1, "Minimum members must be at least 1")
+        .max(10, "Minimum members cannot exceed 10")
+        .optional(),
+      maxMembers: z
+        .number()
+        .int()
+        .min(1, "Maximum members must be at least 1")
+        .max(10, "Maximum members cannot exceed 10")
+        .optional(),
+    })
+    .refine(
+      (data) => {
+        if (data.minMembers && data.maxMembers) {
+          return data.minMembers <= data.maxMembers;
+        }
+        return true;
+      },
+      {
+        message: "Minimum members cannot be greater than maximum members",
+        path: ["minMembers"],
       }
-      return true;
-    },
-    {
-      message: "Minimum members cannot be greater than maximum members",
-      path: ["minMembers"],
-    }
-  ),
+    ),
+  addDepartmentStudent: z
+    .array(
+      z.object({
+        userId: z.number().int().min(1, "User ID is required"),
+      })
+    )
+    .length(1, "At least one student must be selected"),
 };
 
 export { validationSchemas };

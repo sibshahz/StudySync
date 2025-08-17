@@ -23,6 +23,12 @@ deptRouter.post(
   departmentController.createDepartment
 );
 
+deptRouter.post(
+  "/:orgId/:deptId",
+  validate("addDepartmentStudent"),
+  departmentController.addDepartmentStudent
+);
+
 deptRouter.put(
   "/:orgId/:deptId",
   validate("updateDepartment"),

@@ -269,9 +269,9 @@ export const editMemberSchema = z.object({
   batch: z.nativeEnum(Batch).optional(),
 });
 
-export const promoteMemberSchema = z.object({
+export const addDepartmentStudentSchema = z.object({
   memberIds: z.array(z.number()).min(1, "At least one member must be selected"),
-  newBatch: z.nativeEnum(Batch, "Please select a valid batch/semester"),
+  deptId: z.string().min(1, "Department is required"),
 });
 
 // Zod schemas for Department validation
@@ -428,7 +428,9 @@ export type CreateFYPProjectInput = z.infer<typeof createFYPProjectSchema>;
 export type EditFYPProjectInput = z.infer<typeof editFYPProjectSchema>;
 export type CreateMemberInput = z.infer<typeof createMemberSchema>;
 export type EditMemberInput = z.infer<typeof editMemberSchema>;
-export type PromoteMemberInput = z.infer<typeof promoteMemberSchema>;
+export type AddDepartmentStudentInput = z.infer<
+  typeof addDepartmentStudentSchema
+>;
 export type CreateDepartmentInput = z.infer<typeof createDepartmentSchema>;
 export type EditDepartmentInput = z.infer<typeof editDepartmentSchema>;
 export type CreateBatchInput = z.infer<typeof createBatchSchema>;

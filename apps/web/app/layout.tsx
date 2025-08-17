@@ -15,8 +15,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Agents Inc",
-  description: "Agents for your business",
+  title: "StudySync",
+  description: "Streamline Academic Management with StudySync",
 };
 
 export default function RootLayout({

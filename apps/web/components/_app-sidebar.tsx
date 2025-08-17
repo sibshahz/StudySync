@@ -36,9 +36,12 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/auth-context";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "@/lib/store/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/lib/store/store";
 import { fetchOrganizations } from "@/lib/store/common/orgsSlice";
+import { fetchDepartments } from "@/lib/store/common/deptSlice";
+
+import { fetchBatches } from "@/lib/store/common/batchSlice";
 
 // This is sample data.
 const data = {
@@ -285,10 +288,22 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 
 export function AppSidebar({ showswitcher, ...rest }: AppSidebarProps) {
   const { user } = useAuth();
+  const selectedOrganization = useSelector(
+    (state: RootState) =>
+      state.organizations.selectedOrganization ||
+      state.organizations.userDefaultOrganization,
+  );
   const dispatch = useDispatch<AppDispatch>();
   React.useEffect(() => {
     dispatch(fetchOrganizations());
   }, []);
+
+  React.useEffect(() => {
+    if (selectedOrganization) {
+      dispatch(fetchDepartments(selectedOrganization.id.toString()));
+      dispatch(fetchBatches(selectedOrganization.id.toString()));
+    }
+  }, [selectedOrganization]);
   return (
     <Sidebar collapsible="icon" {...rest}>
       <SidebarHeader>

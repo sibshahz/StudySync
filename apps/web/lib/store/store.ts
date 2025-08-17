@@ -1,9 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
 import organizationSlice from "./common/orgsSlice";
+import departmentSlice from "./common/deptSlice";
+import batchSlice from "./common/batchSlice";
+
 export const makeStore = () => {
   return configureStore({
     reducer: {
       organizations: organizationSlice,
+      departments: departmentSlice,
+      batches: batchSlice, // Assuming batchSlice is imported from the appropriate file
     },
   });
 };

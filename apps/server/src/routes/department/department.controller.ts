@@ -82,3 +82,22 @@ export const deleteDepartment = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const addDepartmentStudent = async (req: Request, res: Response) => {
+  try {
+    const orgId = req.params.orgId;
+    const deptId = req.params.deptId;
+    const students = req.body; // Expecting an array of student objects
+    const addedStudents = await departmentService.addDepartmentStudent(
+      String(orgId),
+      String(deptId),
+      students
+    );
+    res.status(201).json({
+      success: true,
+      data: addedStudents,
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

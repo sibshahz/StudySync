@@ -347,20 +347,20 @@ export function ListMembers({ refreshTrigger }: ListMembersProps) {
               </Badge>
               {selectedMembers.length > 0 && (
                 <>
-                  <PromoteMembers
+                  {/* <PromoteMembers
                     selectedMembers={selectedMemberObjects}
                     onPromotionComplete={() => {
                       fetchMembers();
                       setSelectedMembers([]);
                     }}
-                  />
-                  <AssignMemberBatch
+                  /> */}
+                  {/* <AssignMemberBatch
                     selectedMembers={selectedMemberObjects}
                     onPromotionComplete={() => {
                       fetchMembers();
                       setSelectedMembers([]);
                     }}
-                  />
+                  /> */}
                   <AssignMemberDept
                     selectedMembers={selectedMemberObjects}
                     onPromotionComplete={() => {

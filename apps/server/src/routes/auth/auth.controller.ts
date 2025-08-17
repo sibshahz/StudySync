@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import * as authService from "@/services/authService";
+import "dotenv/config";
 
 declare global {
   namespace Express {
@@ -30,7 +31,9 @@ export const login = async (req: Request, res: Response) => {
     res.cookie("token", result.token, {
       httpOnly: true,
       secure: true, // must be true for cross-site cookies
-      sameSite: "none", // allow cross-site
+      sameSite: process.env.APP_URL ? "lax" : "none", // allow cross-site
+      domain:
+        process.env.APP_URL ? new URL(process.env.APP_URL).hostname : undefined,
       path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 15 min
     });
@@ -38,7 +41,9 @@ export const login = async (req: Request, res: Response) => {
     res.cookie("refreshToken", result.refreshToken, {
       httpOnly: true,
       secure: true,
-      sameSite: "none",
+      sameSite: process.env.APP_URL ? "lax" : "none", // allow cross-site
+      domain:
+        process.env.APP_URL ? new URL(process.env.APP_URL).hostname : undefined,
       path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
