@@ -47,7 +47,7 @@ export const postStudentToDepartment = async (orgId, deptId, data) => {
   try {
     const response = await axios_default.post(
       `/departments/add/${orgId}/${deptId}`,
-      data,
+      { students: data },
     );
     return response.data;
   } catch (error) {

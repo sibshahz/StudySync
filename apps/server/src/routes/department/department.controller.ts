@@ -87,7 +87,7 @@ export const addDepartmentStudent = async (req: Request, res: Response) => {
   try {
     const orgId = req.params.orgId;
     const deptId = req.params.deptId;
-    const students = req.body; // Expecting an array of student objects
+    const students = req.body.students; // Expecting an array of student objects
     const addedStudents = await departmentService.addDepartmentStudent(
       String(orgId),
       String(deptId),

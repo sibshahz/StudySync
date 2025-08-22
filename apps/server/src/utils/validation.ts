@@ -187,13 +187,15 @@ const validationSchemas = {
         path: ["minMembers"],
       }
     ),
-  addDepartmentStudent: z
-    .array(
-      z.object({
-        userId: z.number().int().min(1, "User ID is required"),
-      })
-    )
-    .length(1, "At least one student must be selected"),
+  addDepartmentStudent: z.object({
+    students: z
+      .array(
+        z.object({
+          userId: z.number().int().min(1, "User ID is required"),
+        })
+      )
+      .length(1, "At least one student must be selected"),
+  }),
 
   addStudentBatch: z.object({
     studentIds: z.array(z.number().min(1, "Invalid student ID")),

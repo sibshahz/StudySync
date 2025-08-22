@@ -410,8 +410,8 @@ export function ListStudents({
                       )}
                     </TableCell>
                     <TableCell>
-                      {student.batch ? (
-                        <Badge variant="outline">{student.batch}</Badge>
+                      {student?.batch ? (
+                        <Badge variant="outline">{student.batch.name}</Badge>
                       ) : (
                         <Badge
                           variant="outline"
