@@ -46,7 +46,7 @@ export const deleteDepartment = async (id) => {
 export const postStudentToDepartment = async (orgId, deptId, data) => {
   try {
     const response = await axios_default.post(
-      `/departments/${orgId}/${deptId}`,
+      `/departments/add/${orgId}/${deptId}`,
       data,
     );
     return response.data;

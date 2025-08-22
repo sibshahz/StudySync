@@ -24,7 +24,7 @@ deptRouter.post(
 );
 
 deptRouter.post(
-  "/:orgId/:deptId",
+  "/add/:orgId/:deptId",
   validate("addDepartmentStudent"),
   departmentController.addDepartmentStudent
 );
