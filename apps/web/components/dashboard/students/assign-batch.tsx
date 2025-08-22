@@ -35,6 +35,8 @@ import {
   getBatchDisplayName,
   type Student,
 } from "@/types/types";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/store/store";
 
 interface AssignBatchProps {
   students: Student[];
@@ -53,6 +55,7 @@ export function AssignBatch({
 }: AssignBatchProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const batches = useSelector((state: RootState) => state.batches.batches);
 
   const form = useForm<AssignStudentBatchInput>({
     resolver: zodResolver(assignStudentBatchSchema),
@@ -62,17 +65,20 @@ export function AssignBatch({
     },
   });
 
-  const selectedStudents = students.filter((student) =>
+  const selectedStudents = students?.filter((student) =>
     selectedStudentIds.includes(student.id),
   );
 
   const onSubmit = async (data: AssignStudentBatchInput) => {
     try {
       setIsLoading(true);
-      await onAssign(data);
+      await onAssign({
+        studentIds: selectedStudentIds,
+        batch: Number(data.batch),
+      });
       toast({
         title: "Success",
-        description: `Successfully assigned ${selectedStudentIds.length} student(s) to ${getBatchDisplayName(data.batch)}.`,
+        description: `Successfully assigned ${selectedStudentIds.length} student(s) to ${data.batch}.`,
       });
       onOpenChange(false);
       form.reset();
@@ -102,7 +108,7 @@ export function AssignBatch({
           <div className="mb-4">
             <h4 className="text-sm font-medium mb-2">Selected Students:</h4>
             <div className="max-h-32 overflow-y-auto space-y-1">
-              {selectedStudents.map((student) => (
+              {selectedStudents?.map((student) => (
                 <div
                   key={student.id}
                   className="text-sm text-muted-foreground bg-muted p-2 rounded"
@@ -120,20 +126,20 @@ export function AssignBatch({
                 name="batch"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Batch/Semester</FormLabel>
+                    <FormLabel>Batch</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a batch/semester" />
+                          <SelectValue placeholder="Select a batch" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {Object.values(Batch).map((batch) => (
-                          <SelectItem key={batch} value={batch}>
-                            {getBatchDisplayName(batch)}
+                        {batches.map((batch) => (
+                          <SelectItem key={batch.id} value={String(batch.id)}>
+                            {batch.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -152,7 +158,11 @@ export function AssignBatch({
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isLoading}>
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  onClick={() => onSubmit(form.getValues())}
+                >
                   {isLoading ? "Assigning..." : "Assign Batch"}
                 </Button>
               </DialogFooter>

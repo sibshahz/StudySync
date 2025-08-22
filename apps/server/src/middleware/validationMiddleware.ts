@@ -15,9 +15,9 @@ export const validate = (schemaName: SchemaName) => {
       });
       return;
     }
-
+    console.log("*** Schema is: ", schemaName);
     const result = schema.safeParse(req.body);
-
+    // console.log("*** validation result: ", result);
     if (!result.success) {
       const errors = result.error.issues.map((err) => ({
         field: err.path.join("."),

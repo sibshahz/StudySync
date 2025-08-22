@@ -74,3 +74,20 @@ export const deleteBatch = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const assignStudentBatch = async (req: Request, res: Response) => {
+  try {
+    const { studentIds, batch } = req.body;
+    console.log("***assign body", { studentIds, batch });
+    const result = await batchService.assignStudentBatch({
+      studentIds,
+      batch,
+    });
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

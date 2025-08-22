@@ -64,7 +64,7 @@ export function UpdateStudentStatus({
     },
   });
 
-  const selectedStudents = students.filter((student) =>
+  const selectedStudents = students?.filter((student) =>
     selectedStudentIds.includes(student.id),
   );
 
@@ -74,7 +74,7 @@ export function UpdateStudentStatus({
       await onUpdateStatus(data);
       toast({
         title: "Success",
-        description: `Successfully updated status for ${selectedStudentIds.length} student(s) to ${getStatusDisplayName(data.status)}.`,
+        description: `Successfully updated status for ${selectedStudentIds.length} student(s) to ${data.status}.`,
       });
       onOpenChange(false);
       form.reset();
@@ -104,7 +104,7 @@ export function UpdateStudentStatus({
           <div className="mb-4">
             <h4 className="text-sm font-medium mb-2">Selected Students:</h4>
             <div className="max-h-32 overflow-y-auto space-y-1">
-              {selectedStudents.map((student) => (
+              {selectedStudents?.map((student) => (
                 <div
                   key={student.id}
                   className="text-sm text-muted-foreground bg-muted p-2 rounded flex justify-between items-center"

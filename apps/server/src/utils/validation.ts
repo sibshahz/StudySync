@@ -194,6 +194,11 @@ const validationSchemas = {
       })
     )
     .length(1, "At least one student must be selected"),
+
+  addStudentBatch: z.object({
+    studentIds: z.array(z.number().min(1, "Invalid student ID")),
+    batch: z.number().min(1, "Please select a valid batch"),
+  }),
 };
 
 export { validationSchemas };

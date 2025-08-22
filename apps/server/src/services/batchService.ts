@@ -1,4 +1,5 @@
 import { prisma } from "@repo/database";
+import { validationSchemas } from "@/utils/validation";
 
 export const getAllBatches = async (orgId: string) => {
   try {
@@ -101,6 +102,38 @@ export const deleteBatch = async (deptId: string, batchId: string) => {
     return deletedBatch;
   } catch (error) {
     console.error("Failed to delete batch:", error);
+    return null;
+  }
+};
+
+export const assignStudentBatch = async (data: any) => {
+  try {
+    const { studentIds, batch } = data;
+    const [updatedStudents, updatedBatch] = await prisma.$transaction([
+      prisma.student.updateMany({
+        where: {
+          userId: {
+            in: studentIds.map((id: number) => Number(id)),
+          },
+        },
+        data: {
+          batchId: Number(batch),
+        },
+      }),
+      prisma.batch.update({
+        where: {
+          id: Number(batch),
+        },
+        data: {
+          students: {
+            connect: studentIds.map((id: number) => ({ userId: Number(id) })),
+          },
+        },
+      }),
+    ]);
+    return { updatedStudents, updatedBatch };
+  } catch (error) {
+    console.error("Failed to assign students to batch:", error);
     return null;
   }
 };

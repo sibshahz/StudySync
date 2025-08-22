@@ -33,7 +33,6 @@ export const authenticate = async (
 
     const decoded = jwtService.verifyAccessToken(token); // You might want to wrap in try-catch
     const user = await authService.getProfile(decoded.id);
-    console.log("*** DECODED USER: ", user);
 
     if (!user) {
       res.status(404).json({

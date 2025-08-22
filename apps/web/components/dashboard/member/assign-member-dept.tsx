@@ -86,15 +86,12 @@ export function AssignMemberDept({
       // await new Promise((resolve) => setTimeout(resolve, 1000));
       const userIds = values.memberIds.map((id) => ({ userId: id }));
 
-      console.log("*** Assigning department members:", userIds);
-
       const response = await postStudentToDepartment(
         selectedOrganization?.id,
         values.deptId,
         userIds,
       );
 
-      console.log("*** Response from API:", response);
       // Here you would make the actual API call
 
       toast("Students added successfully", {

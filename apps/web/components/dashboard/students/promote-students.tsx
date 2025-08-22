@@ -64,13 +64,13 @@ export function PromoteStudents({
     },
   });
 
-  const selectedStudents = students.filter((student) =>
+  const selectedStudents = students?.filter((student) =>
     selectedStudentIds.includes(student.id),
   );
 
   // Get suggested next semester based on current batches
   const suggestedBatches = new Set<Batch>();
-  selectedStudents.forEach((student) => {
+  selectedStudents?.forEach((student) => {
     if (student.batch) {
       const nextSemester = getNextSemester(student.batch);
       if (nextSemester) {
@@ -85,7 +85,7 @@ export function PromoteStudents({
       await onPromote(data);
       toast({
         title: "Success",
-        description: `Successfully promoted ${selectedStudentIds.length} student(s) to ${getBatchDisplayName(data.newBatch)}.`,
+        description: `Successfully promoted ${selectedStudentIds.length} student(s) to ${data.newBatch}.`,
       });
       onOpenChange(false);
       form.reset();
@@ -115,7 +115,7 @@ export function PromoteStudents({
           <div className="mb-4">
             <h4 className="text-sm font-medium mb-2">Selected Students:</h4>
             <div className="max-h-32 overflow-y-auto space-y-1">
-              {selectedStudents.map((student) => (
+              {selectedStudents?.map((student) => (
                 <div
                   key={student.id}
                   className="text-sm text-muted-foreground bg-muted p-2 rounded flex justify-between items-center"

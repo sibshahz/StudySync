@@ -123,7 +123,6 @@ export function ListFYPProjects({ refreshTrigger }: ListFYPProjectsProps) {
       // Simulate API call
       // await new Promise((resolve) => setTimeout(resolve, 1000));
       const response = await getAllProjects();
-      console.log("*** Fetched projects:", response);
 
       // Here you would make the actual API call
       setProjects(response);

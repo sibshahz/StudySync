@@ -6,10 +6,8 @@ export const getAllOrgMembers = async (orgId: string): Promise<User[]> => {
     const members = await prisma.user.findMany({
       where: { memberships: { some: { organizationId: Number(orgId) } } },
       include: {
-        memberships:true,
-        refreshTokens:true,
-
-      }
+        memberships: true,
+      },
     });
     return members;
   } catch (error) {
@@ -18,24 +16,25 @@ export const getAllOrgMembers = async (orgId: string): Promise<User[]> => {
   }
 };
 
-
-export const deleteOrgMember = async (memberId: string): Promise<User | null> => {
+export const deleteOrgMember = async (
+  memberId: string
+): Promise<User | null> => {
   try {
     const delMemberShip = await prisma.organizationMembership.deleteMany({
       where: {
-        userId: Number(memberId)
-      }
-    })
-    
+        userId: Number(memberId),
+      },
+    });
+
     const deletedMember = await prisma.user.delete({
       where: {
-        id: Number(memberId)
+        id: Number(memberId),
       },
-      include: {memberships: true }
-    })
+      include: { memberships: true },
+    });
     return deletedMember;
-  } catch (error:any) {
-    console.error("Failed to delete member: ", error.message)
+  } catch (error: any) {
+    console.error("Failed to delete member: ", error.message);
     return null;
   }
-}
+};

@@ -15,12 +15,12 @@ batchRouter.use(
   authorize([UserRole.STUDENT, UserRole.TEACHER, UserRole.ADMIN])
 );
 
-batchRouter.get("/:orgId", batchController.getAllBatches);
+batchRouter.get("/org/:orgId", batchController.getAllBatches);
 
-batchRouter.get("/:batchId", batchController.getSingleBatch);
+batchRouter.get("/batch/:batchId", batchController.getSingleBatch);
 
 batchRouter.post(
-  "/:deptId",
+  "/create/:deptId",
   validate("createBatch"),
   batchController.createBatch
 );
@@ -29,6 +29,12 @@ batchRouter.put(
   "/:deptId/:batchId",
   validate("updateBatch"),
   batchController.updateBatch
+);
+
+batchRouter.post(
+  "/assign",
+  validate("addStudentBatch"),
+  batchController.assignStudentBatch
 );
 
 batchRouter.delete("/:orgId/:deptId/:batchId", batchController.deleteBatch);

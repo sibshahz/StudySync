@@ -73,7 +73,6 @@ export function ListBatches({ refreshTrigger }: ListBatchesProps) {
         const fetchedBatches = await getAllBatches(
           selectedOrganization.id.toString(),
         );
-        console.log("*** Fetched batches:", fetchedBatches);
         setBatches(fetchedBatches || []);
       } catch (error) {
         console.error("Error fetching batches:", error);

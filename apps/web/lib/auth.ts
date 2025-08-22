@@ -114,7 +114,6 @@ export const authAPI = {
     }
 
     const data = await response.json();
-    console.log("*** SIGNUP RESPONSE IS: ", data);
     return normalizeAuthResponse(data);
   },
 
@@ -161,7 +160,6 @@ export const authAPI = {
     }
 
     const data = await response.json();
-    console.log("*** GET PROFILE RESPONSE IS: ", data);
 
     // Handle nested response structure
     return data.data || data;

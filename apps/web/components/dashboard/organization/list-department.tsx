@@ -175,7 +175,6 @@ export function ListDepartments({ refreshTrigger }: ListDepartmentsProps) {
       const departments = await getDepartments(
         String(selectedOrganization?.id),
       );
-      console.log("*** Fetched departments:", departments);
       // Here you would make the actual API call
       setDepartments(departments);
       setFilteredDepartments(departments);

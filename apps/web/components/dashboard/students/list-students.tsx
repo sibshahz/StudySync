@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -63,6 +63,9 @@ import { AssignDepartment } from "./assign-department";
 import { AssignBatch } from "./assign-batch";
 import { PromoteStudents } from "./promote-students";
 import { UpdateStudentStatus } from "./update-student-status";
+import { getAllOrgStudents } from "@/lib/api/students";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/store/store";
 
 interface ListStudentsProps {
   students: Student[];
@@ -90,10 +93,10 @@ export function ListStudents({
   const [assignBatchOpen, setAssignBatchOpen] = useState(false);
   const [promoteStudentsOpen, setPromoteStudentsOpen] = useState(false);
   const [updateStatusOpen, setUpdateStatusOpen] = useState(false);
-
+  console.log("*** List students: ", students);
   // Filter students
   const filteredStudents = useMemo(() => {
-    return students.filter((student) => {
+    return students?.filter((student) => {
       const matchesSearch =
         student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -121,17 +124,17 @@ export function ListStudents({
 
   // Statistics
   const stats = useMemo(() => {
-    const total = students.length;
-    const active = students.filter((s) => s.status === Status.ACTIVE).length;
-    const unassignedDept = students.filter((s) => !s.department).length;
-    const unassignedBatch = students.filter((s) => !s.batch).length;
+    const total = students?.length;
+    const active = students?.filter((s) => s.status === Status.ACTIVE)?.length;
+    const unassignedDept = students?.filter((s) => !s.department)?.length;
+    const unassignedBatch = students?.filter((s) => !s.batch)?.length;
 
     return { total, active, unassignedDept, unassignedBatch };
   }, [students]);
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedStudentIds(filteredStudents.map((s) => s.id));
+      setSelectedStudentIds(filteredStudents?.map((s) => s.id));
     } else {
       setSelectedStudentIds([]);
     }
@@ -247,7 +250,7 @@ export function ListStudents({
                 <SelectContent>
                   <SelectItem value="all">All Departments</SelectItem>
                   <SelectItem value="unassigned">Unassigned</SelectItem>
-                  {Object.values(Department).map((dept) => (
+                  {Object.values(Department)?.map((dept) => (
                     <SelectItem key={dept} value={dept}>
                       {getDepartmentDisplayName(dept)}
                     </SelectItem>
@@ -286,10 +289,10 @@ export function ListStudents({
             </div>
 
             {/* Bulk Actions */}
-            {selectedStudentIds.length > 0 && (
+            {selectedStudentIds?.length > 0 && (
               <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
                 <span className="text-sm font-medium">
-                  {selectedStudentIds.length} student(s) selected
+                  {selectedStudentIds?.length} student(s) selected
                 </span>
                 <div className="flex gap-2 ml-auto">
                   <Button
@@ -339,8 +342,8 @@ export function ListStudents({
                 <TableHead className="w-12">
                   <Checkbox
                     checked={
-                      selectedStudentIds.length === filteredStudents.length &&
-                      filteredStudents.length > 0
+                      selectedStudentIds?.length === filteredStudents?.length &&
+                      filteredStudents?.length > 0
                     }
                     onCheckedChange={handleSelectAll}
                   />
@@ -355,7 +358,7 @@ export function ListStudents({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredStudents.length === 0 ? (
+              {filteredStudents?.length === 0 ? (
                 <TableRow>
                   <TableCell
                     colSpan={8}
@@ -365,7 +368,7 @@ export function ListStudents({
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredStudents.map((student) => (
+                filteredStudents?.map((student) => (
                   <TableRow key={student.id}>
                     <TableCell>
                       <Checkbox
@@ -395,9 +398,7 @@ export function ListStudents({
                     </TableCell>
                     <TableCell>
                       {student.department ? (
-                        <Badge variant="outline">
-                          {getDepartmentDisplayName(student.department)}
-                        </Badge>
+                        <Badge variant="outline">{student.department}</Badge>
                       ) : (
                         <Badge
                           variant="outline"
@@ -410,9 +411,7 @@ export function ListStudents({
                     </TableCell>
                     <TableCell>
                       {student.batch ? (
-                        <Badge variant="outline">
-                          {getBatchDisplayName(student.batch)}
-                        </Badge>
+                        <Badge variant="outline">{student.batch}</Badge>
                       ) : (
                         <Badge
                           variant="outline"

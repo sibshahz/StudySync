@@ -62,7 +62,7 @@ export function AssignDepartment({
     },
   });
 
-  const selectedStudents = students.filter((student) =>
+  const selectedStudents = students?.filter((student) =>
     selectedStudentIds.includes(student.id),
   );
 
@@ -72,7 +72,7 @@ export function AssignDepartment({
       await onAssign(data);
       toast({
         title: "Success",
-        description: `Successfully assigned ${selectedStudentIds.length} student(s) to ${getDepartmentDisplayName(data.department)}.`,
+        description: `Successfully assigned ${selectedStudentIds.length} student(s) to ${data.department}.`,
       });
       onOpenChange(false);
       form.reset();
@@ -103,7 +103,7 @@ export function AssignDepartment({
           <div className="mb-4">
             <h4 className="text-sm font-medium mb-2">Selected Students:</h4>
             <div className="max-h-32 overflow-y-auto space-y-1">
-              {selectedStudents.map((student) => (
+              {selectedStudents?.map((student) => (
                 <div
                   key={student.id}
                   className="text-sm text-muted-foreground bg-muted p-2 rounded"

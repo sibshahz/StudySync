@@ -4,10 +4,11 @@ import type {
   EditBatchInput,
   BatchEntity,
 } from "@/types/types";
+import { AssignStudentBatchInput } from "@/types/types";
 
 export const getAllBatches = async (orgId: string) => {
   try {
-    const response = await axios_default.get(`/batch/${orgId}`);
+    const response = await axios_default.get(`/batch/org/${orgId}`);
     return response.data;
   } catch (error) {
     console.error("Failed to fetch batches:", error);
@@ -17,7 +18,7 @@ export const getAllBatches = async (orgId: string) => {
 
 export const getSingleBatch = async (batchId: string) => {
   try {
-    const response = await axios_default.get(`/batch/${batchId}`);
+    const response = await axios_default.get(`/batch/batch/${batchId}`);
     return response.data;
   } catch (error) {
     console.error("Failed to fetch batch:", error);
@@ -27,11 +28,14 @@ export const getSingleBatch = async (batchId: string) => {
 
 export const createBatch = async (data: CreateBatchInput) => {
   try {
-    const response = await axios_default.post(`/batch/${data.departmentId}`, {
-      name: data.name,
-      batchYear: data.batchYear,
-      batchCode: data.batchCode,
-    });
+    const response = await axios_default.post(
+      `/batch/create/${data.departmentId}`,
+      {
+        name: data.name,
+        batchYear: data.batchYear,
+        batchCode: data.batchCode,
+      },
+    );
     return response.data;
   } catch (error) {
     console.error("Failed to create batch:", error);
@@ -68,6 +72,16 @@ export const deleteBatch = async (
     return response.data;
   } catch (error) {
     console.error("Failed to delete batch:", error);
+    throw error;
+  }
+};
+
+export const assignStudentBatch = async (data: AssignStudentBatchInput) => {
+  try {
+    const response = await axios_default.post(`/batch/assign`, data);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to assign students to batch:", error);
     throw error;
   }
 };

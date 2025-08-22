@@ -80,7 +80,6 @@ export function ListFYPGroupRules({ refreshTrigger }: ListFYPGroupRulesProps) {
           selectedOrganization.id.toString(),
         );
         const newRules = fetchedGroupRules.filter((rule) => rule.id);
-        console.log("*** Filtered FYP group rules:", newRules);
         setGroupRules(fetchedGroupRules || []);
       } catch (error) {
         console.error("Error fetching FYP group rules:", error);

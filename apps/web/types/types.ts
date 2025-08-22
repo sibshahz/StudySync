@@ -403,7 +403,7 @@ export const assignStudentBatchSchema = z.object({
   studentIds: z
     .array(z.number())
     .min(1, "At least one student must be selected"),
-  batch: z.nativeEnum(Batch, "Please select a valid batch"),
+  batch: z.number().min(1, "Please select a valid batch"),
 });
 
 export const promoteStudentsSchema = z.object({

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ListStudents } from "@/components/dashboard/students/list-students";
 import {
   type Student,
@@ -12,6 +12,10 @@ import {
   Department,
   Batch,
 } from "@/types/types";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/store/store";
+import { getAllOrgStudents } from "@/lib/api/students";
+import { assignStudentBatch } from "@/lib/api/batches";
 
 // Mock data - replace with actual API calls
 const mockStudents: Student[] = [
@@ -99,8 +103,38 @@ const mockStudents: Student[] = [
 ];
 
 export default function StudentsPage() {
-  const [students, setStudents] = useState<Student[]>(mockStudents);
+  const [students, setStudents] = useState<Student[]>();
   const [isLoading, setIsLoading] = useState(false);
+  const organizationId = useSelector(
+    (state: RootState) => state.organizations.selectedOrganization?.id,
+  );
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      const students = await getAllOrgStudents(organizationId);
+      // let onlyStudents=[];
+
+      const onlyStudents = students.map((student) => {
+        return {
+          id: student.user.id,
+          name: student.user.name,
+          email: student.user.email,
+          createdAt: student.createdAt,
+          updatedAt: student.updatedAt,
+          status: student.status,
+          department: student?.department?.name,
+          batch: student.batch,
+          studentId: student.user.id,
+          enrollmentYear: student.enrollmentYear,
+        };
+      });
+      console.log("*** Only students are: ", onlyStudents);
+      setStudents(onlyStudents || []);
+    };
+    if (organizationId) {
+      fetchStudents();
+    }
+  }, [organizationId]);
 
   // Simulate API calls - replace with actual API integration
   const handleAssignDepartment = async (data: AssignStudentDepartmentInput) => {
@@ -124,10 +158,11 @@ export default function StudentsPage() {
   };
 
   const handleAssignBatch = async (data: AssignStudentBatchInput) => {
+    console.log("*** Assign student data: ", data);
     setIsLoading(true);
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const result = await assignStudentBatch(data);
 
       setStudents((prev) =>
         prev.map((student) =>

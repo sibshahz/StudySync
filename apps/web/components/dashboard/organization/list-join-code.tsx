@@ -142,7 +142,6 @@ export function ListJoinCodes({ refreshTrigger }: ListJoinCodesProps) {
       const joinCodesResponse = await getOrganizationJoinCodes(
         String(selectedOrganization?.id || 0),
       );
-      console.log("***Fetched join codes:", joinCodesResponse);
       // Here you would make the actual API call
       setJoinCodes(joinCodesResponse);
     } catch (error) {

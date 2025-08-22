@@ -22,7 +22,6 @@ export const createJoinCode = async ({
       usageLimit: usageLimit,
       expiresAt: expiresAt,
     });
-    console.log("*** Response from create join: ", response);
     return response.data;
   } catch (error) {
     console.error("Failed to create join codes: ", error);

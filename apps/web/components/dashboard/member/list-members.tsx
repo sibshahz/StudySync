@@ -88,7 +88,9 @@ export function ListMembers({ refreshTrigger }: ListMembersProps) {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const selectedOrgId = useSelector(
-    (state: RootState) => state.organizations.selectedOrganization?.id,
+    (state: RootState) =>
+      state.organizations.selectedOrganization?.id ||
+      state.organizations.userDefaultOrganization?.id,
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<number[]>([]);

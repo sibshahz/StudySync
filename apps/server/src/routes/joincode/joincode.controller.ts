@@ -47,7 +47,6 @@ export const getOrganizationJoinCodes = async (req: Request, res: Response) => {
 
 export const createJoinCode = async (req: Request, res: Response) => {
   try {
-    console.log("*** Create join code request: ", req.body);
     const { organizationId, usageLimit, expiresAt, role } = req.body;
     const data = req.body;
     if (!organizationId || !role) {

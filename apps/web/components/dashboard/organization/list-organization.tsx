@@ -95,7 +95,6 @@ export function ListOrganizations({ refreshTrigger }: ListOrganizationsProps) {
       // await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const response = await getAllOrganizations();
-      console.log("***Fetched organizations:", response);
       // Here you would make the actual API call
 
       setOrganizations(response);
