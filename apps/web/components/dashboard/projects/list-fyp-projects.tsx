@@ -48,6 +48,7 @@ import {
   Eye,
   Calendar,
   FileText,
+  Check,
 } from "lucide-react";
 import { format } from "date-fns";
 import type { FYPProject } from "@/types/types";
@@ -55,6 +56,7 @@ import { EditFYPProject } from "@/components/dashboard/projects/edit-fyp-project
 import { getAllProjects } from "@/lib/api/project";
 import { ViewFYPProject } from "./view-fyp-project";
 import { useAuth } from "@/contexts/auth-context";
+import { SelectFYPProject } from "./select-fyp-project";
 
 interface ListFYPProjectsProps {
   refreshTrigger?: number;
@@ -66,6 +68,7 @@ export function ListFYPProjects({ refreshTrigger }: ListFYPProjectsProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [editingProject, setEditingProject] = useState<FYPProject | null>(null);
   const [viewProject, setViewProject] = useState<FYPProject | null>(null);
+  const [selectProject, setSelectProject] = useState<FYPProject | null>(null);
   const [deletingProject, setDeletingProject] = useState<FYPProject | null>(
     null,
   );
@@ -328,6 +331,14 @@ export function ListFYPProjects({ refreshTrigger }: ListFYPProjectsProps) {
                               <Eye className="mr-2 h-4 w-4" />
                               View Details
                             </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectProject(project);
+                              }}
+                            >
+                              <Check className="mr-2 h-4 w-4" />
+                              Select Project
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => setEditingProject(project)}
@@ -376,6 +387,18 @@ export function ListFYPProjects({ refreshTrigger }: ListFYPProjectsProps) {
           onProjectUpdated={() => {
             fetchProjects();
             setViewProject(null);
+          }}
+        />
+      )}
+
+      {selectProject && (
+        <SelectFYPProject
+          project={selectProject}
+          open={!!selectProject}
+          onOpenChange={(open) => !open && setSelectProject(null)}
+          onProjectUpdated={() => {
+            fetchProjects();
+            setSelectProject(null);
           }}
         />
       )}

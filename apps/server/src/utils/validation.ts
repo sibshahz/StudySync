@@ -2,6 +2,7 @@ import { z } from "zod";
 import { UserRole, SemesterSeason } from "@repo/database/enums";
 import { createBatch } from "@/services/batchService";
 import { add } from "@/_tests_/math";
+import { getProjectSelectionDetails } from "@/services/projService";
 
 // Shared enums
 const userRoleEnum = z.nativeEnum(UserRole);

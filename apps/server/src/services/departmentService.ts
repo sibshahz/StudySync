@@ -93,18 +93,21 @@ export const addDepartmentStudent = async (
   students: { userId: number }[]
 ) => {
   try {
-    const [addedStudents, updatedDepartment] = await prisma.$transaction([
-      prisma.student.createMany({
+    const addedStudents = await prisma.$transaction(async (tx) => {
+      // 1. Create students (or skip if they exist)
+      await tx.student.createMany({
         data: students.map((student) => ({
           userId: student.userId,
           departmentId: Number(deptId),
           batchId: null, // Assuming batchId is not provided in this context
         })),
-        skipDuplicates: true, // Skip if the student already exists
-      }),
+        skipDuplicates: true,
+      });
 
-      prisma.departments.update({
+      // 2. Update department (only if organizationId matches)
+      const updatedDepartment = await tx.departments.update({
         where: {
+          // requires `@@unique([id, organizationId])` in your schema
           id: Number(deptId),
           organizationId: Number(orgId),
         },
@@ -115,8 +118,11 @@ export const addDepartmentStudent = async (
             })),
           },
         },
-      }),
-    ]);
+      });
+
+      return updatedDepartment;
+    });
+
     return addedStudents;
   } catch (error) {
     console.error("Failed to add students to department:", error);

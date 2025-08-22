@@ -20,6 +20,10 @@ projRouter.use(authorize([UserRole.STUDENT, UserRole.TEACHER, UserRole.ADMIN]));
 // projRouter.put("/:projId", validate("updateProject"), projController.FYPProjectAssignmentUpdateWithoutProjectInput);
 // projRouter.delete("/:projId", validate("deleteProject"), projController.deleteProject);
 projRouter.get("/", projController.getAllProjects);
+projRouter.get("/details/:projId", projController.getProjectSelectionDetails);
+
+//*  router to select project for a student*/
+projRouter.get("/select/:projId", projController.getSelectProject);
 // projRouter.get(
 //   "/:projId",
 //   validate("getProject"),

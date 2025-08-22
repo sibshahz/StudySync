@@ -544,3 +544,14 @@ export function getNextSemester(currentBatch: Batch): Batch | null {
   };
   return progression[currentBatch];
 }
+
+export interface StudentGroup {
+  id: number;
+  name: string;
+  projectTitle?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  members: GroupMember[];
+  maxMembers: number;
+  minMembers: number;
+}

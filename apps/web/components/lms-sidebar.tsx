@@ -106,6 +106,10 @@ const data = {
           url: "/lms/fyp/project",
         },
         {
+          title: "My Group",
+          url: "/lms/fyp/group",
+        },
+        {
           title: "Supervisor",
           url: "/lms/fyp/supervisor",
         },
