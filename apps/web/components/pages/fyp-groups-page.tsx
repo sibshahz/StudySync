@@ -269,6 +269,7 @@ export default function FYPGroupsPage({
         selectedDepartment,
         selectedBatch,
       );
+      console.log("***Groups are: ", groups);
 
       // Filter mock groups based on selection
       const filteredGroups = groups.filter(
@@ -522,19 +523,18 @@ export default function FYPGroupsPage({
                           <CardTitle className="text-lg">
                             {group.name}
                           </CardTitle>
+
                           <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
                             <div className="flex items-center gap-1">
                               <Calendar className="h-4 w-4" />
                               Created {formatDate(group.createdAt)}
                             </div>
+
                             <div className="flex items-center gap-1">
                               <Users className="h-4 w-4" />
                               {group.students.length} member
                               {group.students.length !== 1 ? "s" : ""}
                             </div>
-                            <Badge variant="outline">
-                              Project ID: {group.projectId}
-                            </Badge>
                           </div>
                         </div>
                         <div className="flex gap-2">
@@ -560,6 +560,20 @@ export default function FYPGroupsPage({
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
+                        <div className="flex items-center gap-1 mb-4">
+                          <Badge
+                            variant="outline"
+                            className="mr-2 text-lg font-light"
+                          >
+                            <Badge variant={"default"} className="mr-2">
+                              Project Name:
+                            </Badge>{" "}
+                            {group.project?.title}
+                          </Badge>
+                          <Badge variant="secondary" className="font-medium">
+                            Project ID: {group.project?.id}
+                          </Badge>
+                        </div>
                         <h4 className="font-medium text-sm">Group Members:</h4>
                         <Table>
                           <TableHeader>

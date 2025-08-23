@@ -168,6 +168,7 @@ export interface Group {
   supervisorId: number | null;
   createdAt: string;
   updatedAt: string;
+  project?: FYPProject;
   students: GroupStudent[];
 }
 
