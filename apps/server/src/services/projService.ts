@@ -129,6 +129,12 @@ export const getSelectProject = async (projId: number, userId: number) => {
         );
       }
     } else {
+      const existingGroupCount = await prisma.fYPGroup.count({
+        where: {
+          batchId: batchId,
+          departmentId: departmentId,
+        },
+      });
       // no group exists → create new group
       fypGroup = await prisma.fYPGroup.create({
         // data: {
@@ -137,7 +143,7 @@ export const getSelectProject = async (projId: number, userId: number) => {
         //   departmentId,
         // },
         data: {
-          name: `Group_${projId}_${batchId}_${departmentId}`,
+          name: `Group-${existingGroupCount + 1}`,
           projectId: Number(projId),
           batchId: Number(batchId!),
           departmentId: Number(departmentId!),

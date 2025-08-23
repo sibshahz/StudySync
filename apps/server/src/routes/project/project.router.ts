@@ -21,7 +21,6 @@ projRouter.use(authorize([UserRole.STUDENT, UserRole.TEACHER, UserRole.ADMIN]));
 // projRouter.delete("/:projId", validate("deleteProject"), projController.deleteProject);
 projRouter.get("/", projController.getAllProjects);
 projRouter.get("/details/:projId", projController.getProjectSelectionDetails);
-projRouter.get("/details/:projId", projController.getProjectSelectionDetails);
 projRouter.get("/student/details/", projController.getStudentProjectDetails);
 
 //*  router to select project for a student*/
