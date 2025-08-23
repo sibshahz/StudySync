@@ -35,3 +35,14 @@ export const getSelectFYPProject = async (
     return error.response.data.message;
   }
 };
+
+export const getStudentProjectDetails =
+  async (): Promise<FYPProject | null> => {
+    try {
+      const response = await axios_default.get(`project/student/details/`);
+      return response.data as FYPProject;
+    } catch (error) {
+      console.error("Failed to fetch student project details:", error);
+      return null;
+    }
+  };

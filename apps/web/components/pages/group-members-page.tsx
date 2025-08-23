@@ -32,8 +32,8 @@ import {
   FileText,
 } from "lucide-react";
 import { format } from "date-fns";
-import type { StudentGroup } from "@/types/types";
-import { getProjectSelectionDetails } from "@/lib/api/project";
+import type { StudentGroupDetails } from "@/types/types";
+import { getStudentProjectDetails } from "@/lib/api/project";
 
 interface GroupMembersPageProps {
   studentId?: number;
@@ -42,13 +42,13 @@ interface GroupMembersPageProps {
 export default function GroupMembersPage({
   studentId = 1,
 }: GroupMembersPageProps) {
-  const [groupData, setGroupData] = useState<StudentGroup | null>(null);
+  const [groupData, setGroupData] = useState<StudentGroupDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Mock data for demonstration
-  const mockGroupData: StudentGroup = {
+  const mockGroupData: StudentGroupDetails = {
     id: 1,
     name: "Team Alpha",
     projectTitle: "AI-Powered Student Performance Analytics System",
@@ -123,13 +123,15 @@ export default function GroupMembersPage({
     try {
       // Simulate API call
       // await new Promise((resolve) => setTimeout(resolve, 1000));
-      const result = await getProjectSelectionDetails();
+      const result = await getStudentProjectDetails();
+
+      console.log("*** Studnet project details: ", result);
 
       // Here you would make the actual API call
       // const response = await fetch(`/api/students/${studentId}/group`)
       // const data = await response.json()
 
-      setGroupData(mockGroupData);
+      setGroupData(result);
     } catch (error) {
       setError("Failed to load group information");
       toast({
@@ -238,7 +240,7 @@ export default function GroupMembersPage({
     );
   }
 
-  const { members } = groupData;
+  const members = groupData.groupMembers;
 
   return (
     <div className="container mx-auto py-8 space-y-6">
@@ -249,13 +251,13 @@ export default function GroupMembersPage({
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
-                {groupData.name}
+                {groupData.group.name}
               </CardTitle>
               <CardDescription>
-                {groupData.projectTitle && (
+                {groupData.project.title && (
                   <span className="flex items-center gap-1 mt-1">
                     <FileText className="h-4 w-4" />
-                    {groupData.projectTitle}
+                    {groupData.project.title}
                   </span>
                 )}
               </CardDescription>
@@ -264,9 +266,9 @@ export default function GroupMembersPage({
               <Badge variant="outline">
                 {members.length}/{groupData.maxMembers} Members
               </Badge>
-              <Button variant="outline" size="sm" onClick={handleLeaveGroup}>
+              {/* <Button variant="outline" size="sm" onClick={handleLeaveGroup}>
                 Leave Group
-              </Button>
+              </Button> */}
             </div>
           </div>
         </CardHeader>
@@ -277,7 +279,7 @@ export default function GroupMembersPage({
               <div>
                 <p className="text-sm font-medium">Created</p>
                 <p className="text-sm text-muted-foreground">
-                  {format(groupData.createdAt, "MMM dd, yyyy")}
+                  {format(groupData.group.createdAt, "MMM dd, yyyy")}
                 </p>
               </div>
             </div>
@@ -286,11 +288,12 @@ export default function GroupMembersPage({
               <div>
                 <p className="text-sm font-medium">Group Size</p>
                 <p className="text-sm text-muted-foreground">
-                  {groupData.minMembers}-{groupData.maxMembers} members
+                  {groupData.groupMembers.length}-
+                  {groupData.group.batch.FYPGroupRules.maxMembers} members
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            {/* <div className="flex items-center gap-2">
               <Crown className="h-4 w-4 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium">Leader</p>
@@ -299,7 +302,7 @@ export default function GroupMembersPage({
                     "Not assigned"}
                 </p>
               </div>
-            </div>
+            </div> */}
           </div>
         </CardContent>
       </Card>
@@ -361,10 +364,10 @@ export default function GroupMembersPage({
                           <GraduationCap className="h-4 w-4 text-muted-foreground" />
                           <div>
                             <p className="text-sm font-medium">
-                              {student.batch.name}
+                              {groupData.group.batch.name}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              {student.batch.batchCode}
+                              {groupData.group.batch.batchCode}
                             </p>
                           </div>
                         </div>
@@ -373,7 +376,7 @@ export default function GroupMembersPage({
                         <div className="flex items-center gap-2">
                           <Building2 className="h-4 w-4 text-muted-foreground" />
                           <span className="text-sm">
-                            {student.department.name}
+                            {groupData.group.batch.department.name}
                           </span>
                         </div>
                       </TableCell>
@@ -394,8 +397,10 @@ export default function GroupMembersPage({
         </CardContent>
       </Card>
 
-      {/* Group Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* 
+      @Todo: Add progress statistics
+      Group Progress Statistics */}
+      {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -435,7 +440,7 @@ export default function GroupMembersPage({
             </div>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
     </div>
   );
 }

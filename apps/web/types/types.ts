@@ -545,13 +545,35 @@ export function getNextSemester(currentBatch: Batch): Batch | null {
   return progression[currentBatch];
 }
 
-export interface StudentGroup {
+type StudentInfoType = {
+  id: number;
+  email: string;
+  name: string;
+};
+type DepartmentInfoType = {
   id: number;
   name: string;
-  projectTitle?: string;
   createdAt: Date;
   updatedAt: Date;
-  members: GroupMember[];
-  maxMembers: number;
-  minMembers: number;
+  organizationId: number;
+};
+type GroupInfoType = {
+  createdAt: Date;
+  name: string;
+  updatedAt: Date;
+  batch: {
+    id: number;
+    name: string;
+    batchCode: string;
+    batchYear: number;
+    createdAt: Date;
+    updatedAt: Date;
+    FYPGroupRules: FYPGroupRules;
+    department: DepartmentInfoType;
+  };
+};
+export interface StudentGroupDetails {
+  group: GroupInfoType;
+  groupMembers: [StudentInfoType];
+  project: FYPProject;
 }

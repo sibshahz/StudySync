@@ -91,6 +91,12 @@ export const getSelectProject = async (projId: number, userId: number) => {
       throw new Error("Student not found");
     }
 
+    // check if student already has a project selected then return it
+
+    if (student.FYPGroupId) {
+      throw new Error("Student already has a project selected");
+    }
+
     const batchId = student.batch?.id;
     const departmentId = student.department?.id;
 
@@ -148,6 +154,63 @@ export const getSelectProject = async (projId: number, userId: number) => {
     return fypGroup;
   } catch (error) {
     console.error("Failed to fetch selected project:", error);
+    throw error;
+  }
+};
+
+export const getStudentProjectDetails = async (studentId: number) => {
+  try {
+    const student = await prisma.student.findUnique({
+      where: {
+        userId: studentId,
+      },
+    });
+    if (!student?.FYPGroupId) {
+      throw new Error("Student has not selected any project");
+    } else {
+      const group = await prisma.fYPGroup.findUnique({
+        where: {
+          id: student.FYPGroupId,
+        },
+        include: {
+          batch: {
+            include: {
+              FYPGroupRules: true,
+              department: true,
+            },
+          },
+        },
+      });
+
+      const project = await prisma.fYPProjects.findUnique({
+        where: {
+          id: group?.projectId,
+        },
+      });
+
+      const groupMembers = await prisma.student.findMany({
+        where: {
+          FYPGroupId: group?.id,
+        },
+        select: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      });
+
+      return {
+        project,
+        group,
+        groupMembers,
+      };
+    }
+  } catch (error) {
+    console.error("Failed to fetch student project details:", error);
     throw error;
   }
 };

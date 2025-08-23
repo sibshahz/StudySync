@@ -61,3 +61,18 @@ export const getSelectProject = async (req: Request, res: Response) => {
     return;
   }
 };
+
+export const getStudentProjectDetails = async (req: Request, res: Response) => {
+  const studentId = req.user?.id;
+  try {
+    const projects = await projService.getStudentProjectDetails(
+      Number(studentId)
+    );
+    res.status(200).json({
+      success: true,
+      data: projects,
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
