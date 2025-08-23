@@ -22,7 +22,16 @@ export const authenticate = async (
   next: NextFunction
 ) => {
   try {
-    const token = req.cookies?.token;
+    // Try to get token from cookie first
+    let token = req.cookies?.token;
+
+    // If not in cookie, try Authorization header
+    if (!token && req.headers.authorization) {
+      const authHeader = req.headers.authorization;
+      if (authHeader.startsWith("Bearer ")) {
+        token = authHeader.substring(7);
+      }
+    }
 
     if (!token) {
       return res.status(401).json({
