@@ -25,6 +25,13 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { useAuth } from "@/contexts/auth-context";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/lib/store/store";
+import { fetchOrganizations } from "@/lib/store/common/orgsSlice";
+import { fetchDepartments } from "@/lib/store/common/deptSlice";
+
+import { fetchBatches } from "@/lib/store/common/batchSlice";
 
 // This is sample data.
 const data = {
@@ -176,6 +183,23 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useAuth();
+  const selectedOrganization = useSelector(
+    (state: RootState) =>
+      state.organizations.selectedOrganization ||
+      state.organizations.userDefaultOrganization,
+  );
+  const dispatch = useDispatch<AppDispatch>();
+  React.useEffect(() => {
+    dispatch(fetchOrganizations());
+  }, []);
+
+  React.useEffect(() => {
+    if (selectedOrganization) {
+      dispatch(fetchDepartments(selectedOrganization.id.toString()));
+      dispatch(fetchBatches(selectedOrganization.id.toString()));
+    }
+  }, [selectedOrganization]);
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -185,7 +209,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
         {/* <NavProjects projects={data.projects} /> */}
       </SidebarContent>
-      <SidebarFooter>{/* <NavUser user={data.user} /> */}</SidebarFooter>
+      <SidebarFooter>
+        {" "}
+        <NavUser user={user} />{" "}
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );
