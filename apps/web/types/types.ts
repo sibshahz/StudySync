@@ -150,6 +150,32 @@ export interface FYPGroupRules {
   };
 }
 
+// Group types based on API response
+export interface GroupStudent {
+  user: {
+    id: number;
+    name: string;
+    email: string;
+  };
+}
+
+export interface Group {
+  id: number;
+  name: string;
+  batchId: number;
+  departmentId: number;
+  projectId: number;
+  supervisorId: number | null;
+  createdAt: string;
+  updatedAt: string;
+  students: GroupStudent[];
+}
+
+export interface GroupsResponse {
+  groups: Group[];
+  total: number;
+}
+
 // Zod schemas for Organization validation
 export const createOrganizationSchema = z.object({
   name: z

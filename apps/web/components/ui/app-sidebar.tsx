@@ -8,12 +8,13 @@ import {
   Command,
   Frame,
   GalleryVerticalEnd,
+  GraduationCap,
   Map,
   PieChart,
   Settings2,
   SquareTerminal,
 } from "lucide-react";
-
+import Link from "next/link";
 import { NavMain } from "@/components/_nav-main";
 import { NavProjects } from "@/components/_nav-projects";
 import { NavUser } from "@/components/_nav-user";
@@ -203,6 +204,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
+        <Link href="/" className="flex items-center justify-center">
+          <GraduationCap className="h-8 w-8 text-primary" />
+          <span className="ml-2 text-2xl font-bold">StudySync</span>
+        </Link>
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>

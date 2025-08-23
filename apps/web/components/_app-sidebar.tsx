@@ -22,8 +22,8 @@ import {
   UserCog,
   Users2,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-
+import type { LucideIcon, GraduationCap } from "lucide-react";
+import Link from "next/link";
 import { NavMain } from "@/components/_nav-main";
 import { NavProjects } from "@/components/_nav-projects";
 import { NavUser } from "@/components/_nav-user";
@@ -206,6 +206,18 @@ const data = {
           url: "/dashboard/fyp/projects",
         },
         {
+          title: "Groups",
+          url: "/dashboard/fyp/groups",
+        },
+        {
+          title: "Proposals",
+          url: "/dashboard/fyp/proposals",
+        },
+        {
+          title: "Presentations",
+          url: "/dashboard/fyp/presentations",
+        },
+        {
           title: "FYP Group Rules",
           url: "/dashboard/fyp/group-rules",
         },
@@ -307,8 +319,12 @@ export function AppSidebar({ showswitcher, ...rest }: AppSidebarProps) {
   return (
     <Sidebar collapsible="icon" {...rest}>
       <SidebarHeader>
+        <Link href="/" className="flex items-center justify-center">
+          <GraduationCap className="h-8 w-8 text-primary" />
+          <span className="ml-2 text-2xl font-bold">StudySync</span>
+        </Link>
         {showswitcher && (
-          <div className="mb-4">
+          <div className="mb-0">
             <TeamSwitcher teams={data.teams} />
           </div>
         )}
