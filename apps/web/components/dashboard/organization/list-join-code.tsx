@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   MoreHorizontal,
   Edit,
@@ -73,7 +73,6 @@ export function ListJoinCodes({ refreshTrigger }: ListJoinCodesProps) {
     null,
   );
   const [isDeleting, setIsDeleting] = useState(false);
-  const { toast } = useToast();
 
   // Mock data for demonstration
   const mockJoinCodes: JoinCode[] = [

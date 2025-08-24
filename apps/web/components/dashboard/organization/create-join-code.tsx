@@ -37,7 +37,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Plus, Loader2, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -63,7 +63,6 @@ export function CreateJoinCode({ onJoinCodeCreated }: CreateJoinCodeProps) {
   const organizations = useSelector(
     (state: RootState) => state.organizations.userOrganizations,
   );
-  const { toast } = useToast();
 
   const form = useForm<CreateJoinCodeInput>({
     resolver: zodResolver(createJoinCodeSchema),

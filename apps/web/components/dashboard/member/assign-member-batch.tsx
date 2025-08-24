@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+
 import { GraduationCap, Loader2 } from "lucide-react";
 import {
   promoteMemberSchema,

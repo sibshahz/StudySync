@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   Users,
   Mail,
@@ -45,7 +45,6 @@ export default function GroupMembersPage({
   const [groupData, setGroupData] = useState<StudentGroupDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
 
   // Mock data for demonstration
   const mockGroupData: StudentGroupDetails = {
@@ -134,10 +133,8 @@ export default function GroupMembersPage({
       setGroupData(result);
     } catch (error) {
       setError("Failed to load group information");
-      toast({
-        title: "Error",
+      toast("Error", {
         description: "Unable to load group members. Please try again.",
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -153,18 +150,15 @@ export default function GroupMembersPage({
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      toast({
-        title: "Left Group",
+      toast("Left Group", {
         description: "You have successfully left the group.",
       });
 
       // Refresh data or redirect
       fetchGroupData();
     } catch (error) {
-      toast({
-        title: "Error",
+      toast("Error", {
         description: "Failed to leave group. Please try again.",
-        variant: "destructive",
       });
     }
   };
