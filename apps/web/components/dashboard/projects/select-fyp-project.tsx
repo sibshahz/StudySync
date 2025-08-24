@@ -31,7 +31,8 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+// import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import {
   editFYPProjectSchema,
@@ -43,6 +44,7 @@ import {
   getSelectFYPProject,
 } from "@/lib/api/project";
 import { set } from "zod";
+import { Alert } from "@/components/ui/alert";
 interface SelectFYPProjectProps {
   project: FYPProject;
   deptId: number;
@@ -62,7 +64,8 @@ export function SelectFYPProject({
 }: SelectFYPProjectProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [projectDetails, setProjectDetails] = useState();
-  const { toast } = useToast();
+  const [error, setError] = useState<string | null>(null);
+  // const { toast } = useToast();
 
   const form = useForm<EditFYPProjectInput>({
     resolver: zodResolver(editFYPProjectSchema),
@@ -77,10 +80,20 @@ export function SelectFYPProject({
     const fetchProjectDetails = async () => {
       try {
         const result = await getProjectSelectionDetails(project.id);
-        console.log("***Project details are: ", result);
-        setProjectDetails(result);
-      } catch (error) {
-        console.error("Failed to fetch project details:", error);
+        if (!result?.success) {
+          setError(result?.message || "Failed to fetch project details.");
+          setProjectDetails(undefined);
+        } else {
+          setError(null);
+          setProjectDetails(result.data); // or whatever your data key is
+        }
+      } catch (error: any) {
+        setError(
+          error?.response?.data?.message ||
+            error?.message ||
+            "Student not allotted to any department or batch.",
+        );
+        setProjectDetails(undefined);
       }
     };
     if (project) {
@@ -99,20 +112,30 @@ export function SelectFYPProject({
 
   async function handleSelectProject(projectId: number) {
     setIsLoading(true);
-
     try {
       const result = await getSelectFYPProject(projectId);
-      toast({
-        title: "Success",
-        description: "FYP project selected successfully.",
-      });
-      setProjectDetails(projectDetails.push(result));
-      onOpenChange(false);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to select FYP project. Please try again.",
-        variant: "destructive",
+      if (!result?.success) {
+        setError(result?.message || "Failed to select FYP project.");
+        // Optionally show toast here
+      } else {
+        setError(null);
+        toast("Congratulations!", {
+          description: "Successfully selected FYP project.",
+        });
+        onOpenChange(false);
+        // if (onProjectUpdated) onProjectUpdated();
+      }
+    } catch (error: any) {
+      setError(
+        error?.response?.data?.message ||
+          error?.message ||
+          "An unexpected error occurred.",
+      );
+      toast("Error selecting project", {
+        description:
+          error?.response?.data?.message ||
+          error?.message ||
+          "An unexpected error occurred.",
       });
     } finally {
       setIsLoading(false);
@@ -163,6 +186,11 @@ export function SelectFYPProject({
             Close
           </Button>
         </DialogFooter>
+        {error && (
+          <div className="text-red-700 border-2 border-red-400 p-2 rounded-2xl">
+            {error}
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

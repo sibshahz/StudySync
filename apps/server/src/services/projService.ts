@@ -26,11 +26,11 @@ export const getProjectSelectionDetails = async (
       },
     });
     if (!student) {
-      throw new Error("Student not found");
+      throw new Error("Student not added into any department");
     }
 
     if (!student.batchId || !student.departmentId) {
-      throw new Error("Batch ID or Department ID is not set");
+      throw new Error("Student not alloted department or batch");
     }
     // first get fypGroups where this projId, deptId and batchId is present
     const fypGroup = await prisma.fYPGroup.findFirst({
@@ -99,6 +99,10 @@ export const getSelectProject = async (projId: number, userId: number) => {
 
     const batchId = student.batch?.id;
     const departmentId = student.department?.id;
+
+    if (!departmentId || !batchId) {
+      throw new Error("Student is not in a department or batch");
+    }
 
     // get existing group for this project
     let fypGroup = await prisma.fYPGroup.findFirst({

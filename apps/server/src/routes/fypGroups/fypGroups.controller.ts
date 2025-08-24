@@ -4,7 +4,14 @@ import * as fypGroupService from "@/services/fypGroupService";
 export const getAllFYPGroups = async (req: Request, res: Response) => {
   try {
     const orgId = req.params.orgId;
-    const fypGroups = await fypGroupService.getAllFYPGroups(Number(orgId));
+    const depId = req.params.depId;
+    const batchId = req.params.batchId;
+
+    const fypGroups = await fypGroupService.getAllFYPGroups(
+      Number(orgId),
+      Number(depId),
+      Number(batchId)
+    );
     res.status(200).json({
       success: true,
       data: fypGroups,

@@ -161,6 +161,7 @@ export function ListMembers({ refreshTrigger }: ListMembersProps) {
     setIsLoading(true);
     try {
       const members = await getAllOrgMembers(String(selectedOrgId));
+      console.log("***Fetched members: ", members);
 
       setMembers(members);
 
